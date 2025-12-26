@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Tools
+.ruff_cache/
+
+# Data (user's habits and entries)
+data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
