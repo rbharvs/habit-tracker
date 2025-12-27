@@ -1,6 +1,6 @@
 """Tests for the Lambda handler."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 
 def test_handler_exists():
@@ -103,3 +103,26 @@ def test_handler_redirects_missing_trailing_slash():
     # Should redirect to add trailing slash
     assert response["statusCode"] == 307
     assert response["headers"]["location"] == "/Prod/"
+
+
+def test_handler_warmup_event():
+    """EventBridge warmup event returns 200 and warms DynamoDB connection."""
+    from habit_tracker.handler import handler
+
+    # EventBridge scheduled event for keep-alive
+    event = {"source": "warmup"}
+    context = MagicMock()
+    context.get_remaining_time_in_millis = MagicMock(return_value=30000)
+
+    with patch("habit_tracker.handler.get_storage") as mock_get_storage:
+        mock_storage = MagicMock()
+        mock_get_storage.return_value = mock_storage
+
+        response = handler(event, context)
+
+        # Should return success without going through Mangum
+        assert response["statusCode"] == 200
+        assert response["body"] == "warm"
+
+        # Should have warmed DynamoDB by calling load_habits
+        mock_storage.load_habits.assert_called_once()

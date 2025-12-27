@@ -58,6 +58,12 @@ Resources:
             RestApiId: !Ref HabitApi
             Path: /{proxy+}
             Method: ANY
+        WarmUp:
+          Type: Schedule
+          Properties:
+            Schedule: rate(5 minutes)
+            Input: '{"source": "warmup"}'
+            Enabled: true
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref HabitTable
