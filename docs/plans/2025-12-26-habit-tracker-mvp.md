@@ -593,17 +593,17 @@ async def test_save_and_load_entries():
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes all tests
-- [ ] `uv run python -c "from habit_tracker import storage; print(storage.load_habits())"` shows 3 habits
+- [x] `make test` passes all tests
+- [x] `uv run python -c "from habit_tracker import storage; print(storage.load_habits())"` shows 3 habits
 
 #### Manual Verification:
-- [ ] Start server: `make dev`
-- [ ] Open app: `make browser`
-- [ ] See 3 habits: workout (checkbox), mood (radio buttons), notes (textarea)
-- [ ] Tab through all fields, fill out data, press Enter on Save button
-- [ ] Page refreshes, data is preserved
-- [ ] Navigate to yesterday, enter different data, verify both days saved separately
-- [ ] Check `data/entries/` directory contains JSON files
+- [x] Start server: `make dev`
+- [x] Open app: `make browser`
+- [x] See 3 habits: workout (checkbox), mood (radio buttons), notes (textarea)
+- [x] Tab through all fields, fill out data, press Enter on Save button
+- [x] Page refreshes, data is preserved
+- [x] Navigate to yesterday, enter different data, verify both days saved separately
+- [x] Check `data/entries/` directory contains JSON files
 
 ---
 
