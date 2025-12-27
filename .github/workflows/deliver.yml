@@ -36,3 +36,5 @@ jobs:
         run: make deploy
         env:
           ALLOWED_IPS: ${{ vars.ALLOWED_IPS }}
+          DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
+          CERTIFICATE_ARN: ${{ vars.CERTIFICATE_ARN }}
