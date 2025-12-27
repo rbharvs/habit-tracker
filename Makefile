@@ -1,9 +1,14 @@
-.PHONY: help fix format lint typecheck test dev browser clean build deploy
+.PHONY: help fix check format lint typecheck test dev browser clean build deploy
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 fix: format lint typecheck  ## Run all fixes (format + lint + typecheck)
+
+check:  ## Check code (CI mode - no auto-fix)
+	uv run ruff format --check src/ tests/
+	uv run ruff check src/ tests/
+	uv run ty check src/
 
 format:  ## Format code with ruff + generate requirements.txt
 	uv run ruff format src/ tests/

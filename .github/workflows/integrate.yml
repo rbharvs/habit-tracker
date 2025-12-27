@@ -1,0 +1,33 @@
+name: Integrate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# No permissions block = no special permissions (safe for PRs from forks)
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Check (format, lint, typecheck)
+        run: make check
+
+      - name: Test
+        run: make test
