@@ -35,13 +35,12 @@ Deploy the habit-tracker application to AWS Lambda with DynamoDB storage and Clo
 
 1. `make test` passes with both JSON and DynamoDB (moto) storage backends
 2. `make deploy` successfully deploys to AWS
-3. Application accessible at `https://habits.yourdomain.com` with Google login
+3. Application accessible at `https://habits.yourdomain.com` with email OTP login
 
 ## What We're NOT Doing
 
 - Multi-user support (hardcoded `USER#default` partition key)
 - EventBridge keep-warm rule (can add later if cold starts are problematic)
-- Custom domain in SAM (Cloudflare handles this)
 - Static file serving from Lambda (CSS/JS already from CDN)
 - Async DynamoDB operations (boto3 sync is fine for Lambda)
 
@@ -1020,49 +1019,51 @@ Note: Store the Cloudflare IPs (no developer IP needed in prod) in GitHub secret
 
 ---
 
-## Cloudflare Access Setup (Manual)
+## Cloudflare + Custom Domain Setup (Manual)
 
-After deployment, protect the API with Cloudflare Access:
+After deployment, set up Cloudflare DNS, Access, and API Gateway custom domain.
+
+See `docs/ingress.md` for the full architecture diagram.
 
 ### Prerequisites
-- Domain managed by Cloudflare (free plan works)
-- API Gateway URL from `make deploy` output
+- Domain with nameservers pointed to Cloudflare (free plan works)
+- `CustomDomainTarget` from `make deploy` output
 
-### Steps
+### Step 1: ACM Certificate (one-time)
 
-1. **Add DNS Record**:
-   - Type: CNAME
-   - Name: `habits` (or your subdomain)
-   - Target: `xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`
+1. AWS Console → Certificate Manager (us-east-1)
+2. Request public certificate for `habits.yourdomain.com`
+3. DNS validation → add CNAME to Cloudflare (gray cloud, not proxied)
+4. Wait for "Issued" status
+5. Add ARN to `.env` as `CERTIFICATE_ARN`
+
+### Step 2: Deploy with Custom Domain
+
+```bash
+# .env should have DOMAIN_NAME and CERTIFICATE_ARN set
+make deploy
+```
+
+### Step 3: Cloudflare DNS
+
+1. Add CNAME record:
+   - Name: `habits`
+   - Target: `CustomDomainTarget` from deploy output (e.g., `d-xxx.execute-api.us-east-1.amazonaws.com`)
    - Proxy: Enabled (orange cloud)
 
-2. **Create Access Application**:
-   - Zero Trust → Access → Applications → Add Application
-   - Type: Self-hosted
-   - Application domain: `habits.yourdomain.com`
-   - Session duration: 1 month
+### Step 4: Cloudflare Access
 
-3. **Add Policy**:
-   - Name: Allow me
-   - Action: Allow
-   - Include: Emails → your email
-
-4. **Configure CORS** (required for HTMX):
-   - Settings → CORS
-   - Access-Control-Allow-Credentials: Enabled
-   - Access-Control-Max-Age: 86400
-   - Access-Control-Allow-Origin: `https://habits.yourdomain.com`
-   - Allow all methods: Enabled
-   - Allow all headers: Enabled
-
-5. **Add Google Login**:
-   - Settings → Authentication → Login methods → Add → Google
-   - (No credentials needed - Cloudflare uses its own OAuth app)
+1. Zero Trust → Access → Applications → Add Application
+2. Type: Self-hosted
+3. Application domain: `habits.yourdomain.com`
+4. Session duration: 1 month
+5. Add policy: Allow → Emails → your specific email address
+6. Login method: Email OTP (one-time passcode, enabled by default)
 
 ### Verification
-- [ ] `https://habits.yourdomain.com` redirects to Google login
-- [ ] After login, app loads and works
-- [ ] Auto-save (HTMX POST) works without 403 errors
+- [x] `https://habits.yourdomain.com` redirects to Cloudflare Access login
+- [x] Email OTP sent and login works
+- [x] Direct API Gateway URL returns 403 (IP whitelist working)
 
 ---
 

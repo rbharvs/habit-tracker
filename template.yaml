@@ -6,6 +6,12 @@ Parameters:
   AllowedIPs:
     Type: CommaDelimitedList
     Description: IP CIDR ranges to allow (Cloudflare IPs + your IP)
+  DomainName:
+    Type: String
+    Description: Custom domain name (e.g., habits.example.com)
+  CertificateArn:
+    Type: String
+    Description: ACM certificate ARN for custom domain
 
 Globals:
   Function:
@@ -74,10 +80,31 @@ Resources:
         - AttributeName: sk
           KeyType: RANGE
 
+  CustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Ref DomainName
+      RegionalCertificateArn: !Ref CertificateArn
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  ApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref CustomDomain
+      RestApiId: !Ref HabitApi
+      Stage: Prod
+    DependsOn: HabitApiProdStage
+
 Outputs:
   ApiUrl:
-    Description: API Gateway URL (configure Cloudflare to point here)
+    Description: API Gateway URL (direct, for testing)
     Value: !Sub https://${HabitApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
+
+  CustomDomainTarget:
+    Description: CNAME target for Cloudflare DNS
+    Value: !GetAtt CustomDomain.RegionalDomainName
 
   FunctionName:
     Description: Lambda function name

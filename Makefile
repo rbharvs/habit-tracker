@@ -35,5 +35,5 @@ clean:  ## Remove generated files
 build:  ## Build SAM application (uses container locally, skips on CI/Linux)
 	uv run sam build $$([ -z "$$CI" ] && echo "--use-container")
 
-deploy: fix build  ## Deploy to AWS Lambda (requires ALLOWED_IPS env var)
-	uv run sam deploy --parameter-overrides "AllowedIPs=$(ALLOWED_IPS)"
+deploy: fix build  ## Deploy to AWS Lambda (requires env vars from .env)
+	uv run sam deploy --parameter-overrides "AllowedIPs=$(ALLOWED_IPS)" "DomainName=$(DOMAIN_NAME)" "CertificateArn=$(CERTIFICATE_ARN)"
