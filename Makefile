@@ -32,8 +32,8 @@ browser:  ## Open the app in the default browser
 clean:  ## Remove generated files
 	rm -rf .pytest_cache .ruff_cache __pycache__ src/**/__pycache__
 
-build:  ## Build SAM application
-	uv run sam build $(if $(CI),,--use-container)
+build:  ## Build SAM application (uses container locally, skips on CI/Linux)
+	uv run sam build $$([ -z "$$CI" ] && echo "--use-container")
 
 deploy: fix build  ## Deploy to AWS Lambda (requires ALLOWED_IPS env var)
 	uv run sam deploy --parameter-overrides "AllowedIPs=$(ALLOWED_IPS)"
