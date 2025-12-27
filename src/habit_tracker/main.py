@@ -9,15 +9,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from starlette.datastructures import FormData
 
-from . import storage
 from .models import (
     BinaryEntry,
     BinaryHabit,
+    DailyEntries,
     JournalEntry,
     JournalHabit,
     SingleSelectEntry,
     SingleSelectHabit,
 )
+from .storage import Storage
 
 app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
@@ -32,7 +33,7 @@ FormDataDep = Annotated[FormData, Depends(get_form_data)]
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request, day: str | None = None) -> HTMLResponse:
+def index(request: Request, storage: Storage, day: str | None = None) -> HTMLResponse:
     """Show habit entry form for a day (defaults to today)."""
     target_date = date.fromisoformat(day) if day else date.today()
     habits = storage.load_habits()
@@ -53,7 +54,7 @@ def index(request: Request, day: str | None = None) -> HTMLResponse:
 
 
 @app.post("/save", response_model=None)
-def save(request: Request, form: FormDataDep) -> Response:
+def save(request: Request, storage: Storage, form: FormDataDep) -> Response:
     """Save habit entries from form submission."""
     day = date.fromisoformat(str(form["date"]))
     habits = storage.load_habits()
@@ -73,7 +74,7 @@ def save(request: Request, form: FormDataDep) -> Response:
             case _ as unreachable:
                 assert_never(unreachable)
 
-    storage.save_entries(storage.DailyEntries(date=day, entries=entries))
+    storage.save_entries(DailyEntries(date=day, entries=entries))
 
     # If HTMX request, return just a success indicator with timestamp tooltip
     if request.headers.get("HX-Request"):

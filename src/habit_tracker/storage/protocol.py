@@ -1,0 +1,13 @@
+from datetime import date
+from typing import Protocol
+
+from habit_tracker.models import DailyEntries, Habit
+
+
+class StorageProtocol(Protocol):
+    """Protocol defining the storage interface for habit tracking."""
+
+    def load_habits(self) -> list[Habit]: ...
+    def save_habits(self, habits: list[Habit]) -> None: ...
+    def load_entries(self, day: date) -> DailyEntries | None: ...
+    def save_entries(self, entries: DailyEntries) -> None: ...

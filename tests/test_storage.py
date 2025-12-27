@@ -1,47 +1,32 @@
-"""Tests for JSON file storage operations."""
+"""Tests for JsonFileStorage class."""
 
-import shutil
 from datetime import date
 from pathlib import Path
 
-import pytest
+from habit_tracker.storage.json_storage import JsonFileStorage
 
 
-@pytest.fixture(autouse=True)
-def clean_test_data():
-    """Use a test data directory and clean up after each test."""
-    from habit_tracker import storage
+def test_creates_directories_on_init(tmp_path: Path):
+    """JsonFileStorage creates data and entries directories on init."""
+    data_dir = tmp_path / "data"
+    storage = JsonFileStorage(data_dir=data_dir)
 
-    test_dir = Path("test_data")
-    storage.DATA_DIR = test_dir
-    storage.CONFIG_FILE = test_dir / "config.json"
-    storage.ENTRIES_DIR = test_dir / "entries"
-    yield
-    shutil.rmtree(test_dir, ignore_errors=True)
+    assert data_dir.exists()
+    assert storage.entries_dir.exists()
 
 
-def test_ensure_dirs_creates_directories():
-    """ensure_dirs creates data and entries directories."""
-    from habit_tracker import storage
-
-    storage.ensure_dirs()
-    assert storage.DATA_DIR.exists()
-    assert storage.ENTRIES_DIR.exists()
-
-
-def test_load_habits_returns_empty_list_when_no_config():
+def test_load_habits_returns_empty_list_when_no_config(tmp_path: Path):
     """load_habits returns empty list when config.json doesn't exist."""
-    from habit_tracker import storage
-
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
     habits = storage.load_habits()
     assert habits == []
 
 
-def test_save_and_load_habits_roundtrip():
+def test_save_and_load_habits_roundtrip(tmp_path: Path):
     """Habits can be saved and loaded."""
-    from habit_tracker import storage
     from habit_tracker.models import BinaryHabit, SingleSelectHabit
 
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
     habits = [
         BinaryHabit(id="workout", name="Did you work out?"),
         SingleSelectHabit(id="mood", name="Mood", options=["great", "good", "bad"]),
@@ -58,19 +43,18 @@ def test_save_and_load_habits_roundtrip():
     assert loaded[1].options == ["great", "good", "bad"]
 
 
-def test_load_entries_returns_none_when_no_file():
+def test_load_entries_returns_none_when_no_file(tmp_path: Path):
     """load_entries returns None when date file doesn't exist."""
-    from habit_tracker import storage
-
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
     entries = storage.load_entries(date(2025, 1, 5))
     assert entries is None
 
 
-def test_save_and_load_entries_roundtrip():
+def test_save_and_load_entries_roundtrip(tmp_path: Path):
     """Entries can be saved and loaded."""
-    from habit_tracker import storage
     from habit_tracker.models import BinaryEntry, DailyEntries, JournalEntry
 
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
     daily = DailyEntries(
         date=date(2025, 1, 5),
         entries={
@@ -88,11 +72,11 @@ def test_save_and_load_entries_roundtrip():
     assert loaded.entries["notes"].value == "Great day!"
 
 
-def test_entries_stored_in_dated_files():
+def test_entries_stored_in_dated_files(tmp_path: Path):
     """Each day's entries are stored in a separate file."""
-    from habit_tracker import storage
     from habit_tracker.models import BinaryEntry, DailyEntries
 
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
     day1 = DailyEntries(date=date(2025, 1, 5), entries={"a": BinaryEntry(value=True)})
     day2 = DailyEntries(date=date(2025, 1, 6), entries={"a": BinaryEntry(value=False)})
 
@@ -100,8 +84,8 @@ def test_entries_stored_in_dated_files():
     storage.save_entries(day2)
 
     # Verify files exist
-    assert (storage.ENTRIES_DIR / "2025-01-05.json").exists()
-    assert (storage.ENTRIES_DIR / "2025-01-06.json").exists()
+    assert (storage.entries_dir / "2025-01-05.json").exists()
+    assert (storage.entries_dir / "2025-01-06.json").exists()
 
     # Verify independent loading
     loaded1 = storage.load_entries(date(2025, 1, 5))
@@ -109,3 +93,15 @@ def test_entries_stored_in_dated_files():
 
     assert loaded1.entries["a"].value is True
     assert loaded2.entries["a"].value is False
+
+
+def test_config_file_path(tmp_path: Path):
+    """config_file property returns correct path."""
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+    assert storage.config_file == tmp_path / "data" / "config.json"
+
+
+def test_entries_dir_path(tmp_path: Path):
+    """entries_dir property returns correct path."""
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+    assert storage.entries_dir == tmp_path / "data" / "entries"

@@ -349,12 +349,12 @@ def test_load_habits_returns_empty_list_when_no_config(tmp_path):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes
-- [ ] `make fix` passes
-- [ ] No imports from old `storage` module
+- [x] `make test` passes
+- [x] `make fix` passes
+- [x] No imports from old `storage` module
 
 #### Manual Verification:
-- [ ] `make dev` works, existing `data/` directory still loads
+- [x] `make dev` works, existing `data/` directory still loads
 
 ---
 
