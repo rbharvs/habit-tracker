@@ -157,13 +157,13 @@ def test_index_returns_html():
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes (all 24 tests)
-- [ ] `make fix` passes (format, lint, typecheck)
-- [ ] No `async def` in `main.py`
-- [ ] No `pytest-asyncio` in `pyproject.toml`
+- [x] `make test` passes (all 24 tests)
+- [x] `make fix` passes (format, lint, typecheck)
+- [x] No `async def` in `main.py` (routes are sync; `get_form_data` dependency is async as designed)
+- [x] No `pytest-asyncio` in `pyproject.toml`
 
 #### Manual Verification:
-- [ ] `make dev` starts server, app works at `localhost:8000`
+- [x] `make dev` starts server, app works at `localhost:8000`
 
 ---
 

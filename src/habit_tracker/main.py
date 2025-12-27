@@ -2,11 +2,12 @@
 
 from datetime import date, timedelta
 from pathlib import Path
-from typing import assert_never
+from typing import Annotated, assert_never
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
+from starlette.datastructures import FormData
 
 from . import storage
 from .models import (
@@ -22,8 +23,16 @@ app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 
 
+async def get_form_data(request: Request) -> FormData:
+    """Parse form data asynchronously for use in sync routes."""
+    return await request.form()
+
+
+FormDataDep = Annotated[FormData, Depends(get_form_data)]
+
+
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request, day: str | None = None) -> HTMLResponse:
+def index(request: Request, day: str | None = None) -> HTMLResponse:
     """Show habit entry form for a day (defaults to today)."""
     target_date = date.fromisoformat(day) if day else date.today()
     habits = storage.load_habits()
@@ -44,9 +53,8 @@ async def index(request: Request, day: str | None = None) -> HTMLResponse:
 
 
 @app.post("/save", response_model=None)
-async def save(request: Request) -> Response:
+def save(request: Request, form: FormDataDep) -> Response:
     """Save habit entries from form submission."""
-    form = await request.form()
     day = date.fromisoformat(str(form["date"]))
     habits = storage.load_habits()
 
