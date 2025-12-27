@@ -11,7 +11,7 @@
     {% endif %}
 </nav>
 
-<form method="post" action="/save">
+<form method="post" action="/save" hx-post="/save" hx-target="#save-status" hx-swap="innerHTML">
     <input type="hidden" name="date" value="{{ date.isoformat() }}">
 
     {% for habit in habits %}
@@ -45,5 +45,6 @@
     {% endfor %}
 
     <button type="submit">Save</button>
+    <span id="save-status"></span>
 </form>
 {% endblock %}

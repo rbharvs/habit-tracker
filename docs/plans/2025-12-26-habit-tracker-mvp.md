@@ -671,13 +671,13 @@ async def save(request: Request):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Page loads without JS errors in browser console
+- [x] Page loads without JS errors in browser console
 
 #### Manual Verification:
 - [ ] On mobile: form is easy to use with thumb, Save button is large and accessible
-- [ ] On desktop: Ctrl+Enter saves the form
-- [ ] Auto-save on change works (checkbox toggle saves immediately)
-- [ ] "Saved!" indicator appears briefly after save
+- [x] On desktop: Ctrl+Enter saves the form
+- [x] Auto-save on change works (checkbox toggle saves immediately)
+- [x] "Saved!" indicator appears briefly after save
 
 ---
 

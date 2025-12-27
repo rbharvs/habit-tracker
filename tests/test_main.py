@@ -226,3 +226,99 @@ async def test_today_hides_next_link():
         response = await client.get(f"/?day={today.isoformat()}")
         # Should not show tomorrow's date link
         assert f"day={tomorrow.isoformat()}" not in response.text
+
+
+@pytest.mark.asyncio
+async def test_save_htmx_returns_indicator():
+    """POST /save with HX-Request header returns saved indicator instead of redirect."""
+    from habit_tracker import storage
+    from habit_tracker.main import app
+    from habit_tracker.models import BinaryHabit
+
+    storage.save_habits([BinaryHabit(id="test", name="Test")])
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.post(
+            "/save",
+            data={"date": "2025-01-05", "habit_test": "on"},
+            headers={"HX-Request": "true"},
+            follow_redirects=False,
+        )
+        # Should return 200 with saved indicator, not 303 redirect
+        assert response.status_code == 200
+        assert "Saved!" in response.text
+        assert "saved-indicator" in response.text
+
+
+@pytest.mark.asyncio
+async def test_save_htmx_indicator_has_timestamp_tooltip():
+    """POST /save with HX-Request header includes timestamp in title attribute."""
+    from habit_tracker import storage
+    from habit_tracker.main import app
+    from habit_tracker.models import BinaryHabit
+
+    storage.save_habits([BinaryHabit(id="test", name="Test")])
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.post(
+            "/save",
+            data={"date": "2025-01-05", "habit_test": "on"},
+            headers={"HX-Request": "true"},
+        )
+        # Should have a title attribute with timestamp for mouseover
+        assert 'title="Saved at' in response.text
+
+
+@pytest.mark.asyncio
+async def test_save_htmx_still_persists_data():
+    """POST /save with HX-Request header still saves data."""
+    from habit_tracker import storage
+    from habit_tracker.main import app
+    from habit_tracker.models import BinaryHabit
+
+    storage.save_habits([BinaryHabit(id="test", name="Test")])
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        await client.post(
+            "/save",
+            data={"date": "2025-01-05", "habit_test": "on"},
+            headers={"HX-Request": "true"},
+        )
+
+    # Verify data was saved
+    entries = storage.load_entries(date(2025, 1, 5))
+    assert entries is not None
+    assert entries.entries["test"].value is True
+
+
+@pytest.mark.asyncio
+async def test_index_has_mobile_meta_tags():
+    """GET / includes mobile-friendly meta tags."""
+    from habit_tracker.main import app
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.get("/")
+        # Check for PWA-friendly meta tags
+        assert 'name="apple-mobile-web-app-capable"' in response.text
+        assert 'name="theme-color"' in response.text
+
+
+@pytest.mark.asyncio
+async def test_index_has_save_button():
+    """GET / has a save button that works on mobile."""
+    from habit_tracker.main import app
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.get("/")
+        assert '<button type="submit"' in response.text
+        assert "Save" in response.text

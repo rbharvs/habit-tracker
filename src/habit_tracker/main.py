@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import assert_never
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from . import storage
@@ -43,8 +43,8 @@ async def index(request: Request, day: str | None = None) -> HTMLResponse:
     )
 
 
-@app.post("/save")
-async def save(request: Request) -> RedirectResponse:
+@app.post("/save", response_model=None)
+async def save(request: Request) -> Response:
     """Save habit entries from form submission."""
     form = await request.form()
     day = date.fromisoformat(str(form["date"]))
@@ -66,4 +66,14 @@ async def save(request: Request) -> RedirectResponse:
                 assert_never(unreachable)
 
     storage.save_entries(storage.DailyEntries(date=day, entries=entries))
+
+    # If HTMX request, return just a success indicator with timestamp tooltip
+    if request.headers.get("HX-Request"):
+        from datetime import datetime
+
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        html = f'<span class="saved-indicator show" title="Saved at {timestamp}">'
+        html += "Saved!</span>"
+        return HTMLResponse(html)
+
     return RedirectResponse(url=f"/?day={day.isoformat()}", status_code=303)
