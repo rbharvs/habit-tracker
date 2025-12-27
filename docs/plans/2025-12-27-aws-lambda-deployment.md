@@ -1008,7 +1008,7 @@ Note: Store the Cloudflare IPs (no developer IP needed in prod) in GitHub secret
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make check` passes locally
+- [x] `make check` passes locally
 - [ ] Push to `main` triggers integrate workflow
 - [ ] Integrate workflow passes
 

@@ -1,4 +1,4 @@
-name: Deploy
+name: Deliver
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deliver:
     runs-on: ubuntu-latest
     environment: production  # Requires approval if protection rules configured
     steps:
