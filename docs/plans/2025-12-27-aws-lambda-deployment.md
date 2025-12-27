@@ -52,7 +52,7 @@ The work is divided into 5 phases, each producing a working, testable state:
 1. **Remove asyncio** - Convert routes to sync, update tests
 2. **Storage abstraction** - Protocol + JSON implementation (behavior unchanged)
 3. **DynamoDB implementation** - Add DynamoDB storage, moto tests
-4. **Lambda + SAM** - Mangum handler, SAM template, deployment
+4. **Lambda + SAM** - Mangum handler, REST API with IP whitelist, deployment
 5. **CI/CD** - GitHub Actions workflows with OIDC
 
 Cloudflare Access is a manual step documented at the end.
@@ -643,22 +643,19 @@ def test_save_and_load_entries(dynamodb_storage):
 
 ### Overview
 
-Add Mangum handler and SAM template. Create `make deploy` command.
+Add Mangum handler and SAM template with REST API + IP whitelist. Create `make deploy` command.
+
+**Key change from original plan:** Uses REST API (not HTTP API) with a resource policy to whitelist Cloudflare IPs + developer IP. This secures the origin so only Cloudflare (and you) can access the API Gateway directly.
 
 ### Changes Required
 
 #### `pyproject.toml`
 
-Add mangum dependency:
+Add mangum dependency (use `uv add mangum`, no version constraint):
 
 ```toml
 dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.32.0",
-    "jinja2>=3.1.0",
-    "pydantic>=2.0.0",
-    "python-multipart>=0.0.9",
-    "boto3>=1.35.0",
+    # ... existing deps ...
     "mangum>=0.19.0",
 ]
 ```
@@ -667,6 +664,8 @@ dependencies = [
 
 ```python
 """AWS Lambda handler using Mangum."""
+
+# v0.1.0
 from mangum import Mangum
 
 from habit_tracker.main import app
@@ -676,10 +675,17 @@ handler = Mangum(app, lifespan="off")
 
 #### New file: `template.yaml`
 
+Uses REST API with resource policy for IP whitelisting:
+
 ```yaml
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Habit Tracker - FastAPI on Lambda
+
+Parameters:
+  AllowedIPs:
+    Type: CommaDelimitedList
+    Description: IP CIDR ranges to allow (Cloudflare IPs + your IP)
 
 Globals:
   Function:
@@ -691,7 +697,12 @@ Globals:
 
 Resources:
   HabitApi:
-    Type: AWS::Serverless::HttpApi
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Auth:
+        ResourcePolicy:
+          IpRangeWhitelist: !Ref AllowedIPs
 
   HabitFunction:
     Type: AWS::Serverless::Function
@@ -703,18 +714,17 @@ Resources:
         Variables:
           STORAGE_BACKEND: dynamodb
           TABLE_NAME: !Ref HabitTable
-          AWS_REGION: !Ref AWS::Region
       Events:
         Root:
-          Type: HttpApi
+          Type: Api
           Properties:
-            ApiId: !Ref HabitApi
+            RestApiId: !Ref HabitApi
             Path: /
             Method: ANY
         Proxy:
-          Type: HttpApi
+          Type: Api
           Properties:
-            ApiId: !Ref HabitApi
+            RestApiId: !Ref HabitApi
             Path: /{proxy+}
             Method: ANY
       Policies:
@@ -742,7 +752,7 @@ Resources:
 Outputs:
   ApiUrl:
     Description: API Gateway URL (configure Cloudflare to point here)
-    Value: !Sub https://${HabitApi}.execute-api.${AWS::Region}.amazonaws.com
+    Value: !Sub https://${HabitApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
 
   FunctionName:
     Description: Lambda function name
@@ -770,52 +780,68 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = false
 resolve_s3 = true
 region = "us-east-1"
+s3_prefix = "habit-tracker"
+```
+
+#### New file: `.env` (gitignored)
+
+Contains Cloudflare IPs + your IP. Loaded by direnv:
+
+```bash
+# Cloudflare IPs (https://www.cloudflare.com/ips/) + YOUR_IP
+ALLOWED_IPS=173.245.48.0/20,103.21.244.0/22,...,YOUR_IPV4/32,YOUR_IPV6/64
+```
+
+#### New file: `.envrc`
+
+```bash
+dotenv
+```
+
+#### New file: `.env.example`
+
+Template for `.env` (committed to repo).
+
+#### Update: `.gitignore`
+
+```
+# AWS SAM
+.aws-sam/
+
+# Local environment (contains allowed IPs)
+.env
 ```
 
 #### Update: `Makefile`
 
-Add deployment commands:
-
 ```makefile
-.PHONY: help fix format lint typecheck test dev browser clean build deploy check
-
-# ... existing targets ...
+format:  ## Format code with ruff + generate requirements.txt
+	uv run ruff format src/ tests/
+	@uv export --no-dev --no-hashes --no-emit-project -o src/requirements.txt > /dev/null 2>&1
 
 build:  ## Build SAM application
-	uv run sam build
+	uv run sam build --use-container
 
-deploy: build  ## Deploy to AWS Lambda
-	uv run sam deploy
+deploy: fix build  ## Deploy to AWS Lambda (requires ALLOWED_IPS env var)
+	uv run sam deploy --parameter-overrides "AllowedIPs=$(ALLOWED_IPS)"
 ```
 
-Note: For the first deployment, run `uv run sam deploy --guided` manually to set up the stack.
-
-#### New file: `src/requirements.txt`
-
-SAM needs a requirements.txt for the Lambda package:
-
-```
-fastapi>=0.115.0
-jinja2>=3.1.0
-pydantic>=2.0.0
-python-multipart>=0.0.9
-boto3>=1.35.0
-mangum>=0.19.0
-```
+Note: `make format` auto-generates `src/requirements.txt` from `pyproject.toml`.
 
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make build` succeeds
-- [ ] `make test` still passes
-- [ ] `make fix` passes
+- [x] `make build` succeeds
+- [x] `make test` still passes
+- [x] `make fix` passes
 
 #### Manual Verification:
-- [ ] `uv run sam deploy --guided` deploys to AWS (first time)
-- [ ] `make deploy` works for subsequent deploys
-- [ ] API Gateway URL returns the app (unauthenticated for now)
-- [ ] DynamoDB table is created
-- [ ] Can create habits and entries via the deployed app
+- [x] `sam deploy --guided` deploys to AWS (first time)
+- [x] `make deploy` works for subsequent deploys
+- [x] API Gateway URL returns the app from whitelisted IP
+- [x] API Gateway returns 403 from non-whitelisted IP
+- [x] DynamoDB table is created
+- [x] Can save entries via the deployed app
 
 ---
 
@@ -973,7 +999,11 @@ jobs:
 
       - name: Deploy
         run: make deploy
+        env:
+          ALLOWED_IPS: ${{ secrets.ALLOWED_IPS }}
 ```
+
+Note: Store the Cloudflare IPs (no developer IP needed in prod) in GitHub secret `ALLOWED_IPS`.
 
 ### Success Criteria
 

@@ -19,3 +19,9 @@ data/
 .idea/
 .vscode/
 *.swp
+
+# AWS SAM
+.aws-sam/
+
+# Local environment (contains allowed IPs)
+.env

@@ -24,10 +24,10 @@ uv run pytest tests/test_models.py::test_binary_habit_creation -v
 
 ## Dependencies
 
-Use `uv add` and `uv remove` to manage dependencies - never edit pyproject.toml directly when adding/removing dependencies:
+Use `uv add` and `uv remove` to manage dependencies - never edit pyproject.toml directly when adding/removing dependencies. Don't specify version constraints; uv adds them automatically:
 
 ```bash
-uv add requests              # Add a runtime dependency
+uv add requests              # Add a runtime dependency (no version - uv adds >=X.Y.Z)
 uv add --dev pytest-cov      # Add a dev dependency
 uv remove requests           # Remove a runtime dependency
 uv remove --dev pytest-cov   # Remove a dev dependency

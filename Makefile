@@ -1,12 +1,13 @@
-.PHONY: help fix format lint typecheck test dev browser clean
+.PHONY: help fix format lint typecheck test dev browser clean build deploy
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 fix: format lint typecheck  ## Run all fixes (format + lint + typecheck)
 
-format:  ## Format code with ruff
+format:  ## Format code with ruff + generate requirements.txt
 	uv run ruff format src/ tests/
+	@uv export --no-dev --no-hashes --no-emit-project -o src/requirements.txt > /dev/null 2>&1
 
 lint:  ## Lint and auto-fix with ruff
 	uv run ruff check --fix src/ tests/
@@ -25,3 +26,9 @@ browser:  ## Open the app in the default browser
 
 clean:  ## Remove generated files
 	rm -rf .pytest_cache .ruff_cache __pycache__ src/**/__pycache__
+
+build:  ## Build SAM application
+	uv run sam build --use-container
+
+deploy: fix build  ## Deploy to AWS Lambda (requires ALLOWED_IPS env var)
+	uv run sam deploy --parameter-overrides "AllowedIPs=$(ALLOWED_IPS)"

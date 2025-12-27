@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Habit Tracker - FastAPI on Lambda
+
+Parameters:
+  AllowedIPs:
+    Type: CommaDelimitedList
+    Description: IP CIDR ranges to allow (Cloudflare IPs + your IP)
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.12
+    MemorySize: 256
+    Architectures:
+      - arm64
+
+Resources:
+  HabitApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          ThrottlingRateLimit: 10
+          ThrottlingBurstLimit: 20
+      Auth:
+        ResourcePolicy:
+          IpRangeWhitelist: !Ref AllowedIPs
+
+  HabitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: habit-tracker
+      Handler: habit_tracker.handler.handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          STORAGE_BACKEND: dynamodb
+          TABLE_NAME: !Ref HabitTable
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HabitApi
+            Path: /
+            Method: ANY
+        Proxy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref HabitApi
+            Path: /{proxy+}
+            Method: ANY
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref HabitTable
+    Metadata:
+      BuildMethod: python3.12
+
+  HabitTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: habit-tracker
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL (configure Cloudflare to point here)
+    Value: !Sub https://${HabitApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
+
+  FunctionName:
+    Description: Lambda function name
+    Value: !Ref HabitFunction
+
+  TableName:
+    Description: DynamoDB table name
+    Value: !Ref HabitTable
