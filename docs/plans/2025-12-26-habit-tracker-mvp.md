@@ -501,13 +501,13 @@ async def save(request: Request):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make dev` starts server without errors
-- [ ] `curl http://localhost:8000/` returns HTML
+- [x] `make dev` starts server without errors
+- [x] `curl http://localhost:8000/` returns HTML
 
 #### Manual Verification:
-- [ ] `make browser` opens the app in default browser
-- [ ] See empty form (no habits configured yet)
-- [ ] Tab navigates between form elements in order
+- [x] `make browser` opens the app in default browser
+- [x] See empty form (no habits configured yet)
+- [x] Tab navigates between form elements in order
 
 ---
 

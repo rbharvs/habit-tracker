@@ -1,0 +1,69 @@
+"""FastAPI app with routes for viewing/editing daily entries."""
+
+from datetime import date, timedelta
+from pathlib import Path
+from typing import assert_never
+
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+
+from . import storage
+from .models import (
+    BinaryEntry,
+    BinaryHabit,
+    JournalEntry,
+    JournalHabit,
+    SingleSelectEntry,
+    SingleSelectHabit,
+)
+
+app = FastAPI()
+templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request, day: str | None = None) -> HTMLResponse:
+    """Show habit entry form for a day (defaults to today)."""
+    target_date = date.fromisoformat(day) if day else date.today()
+    habits = storage.load_habits()
+    entries = storage.load_entries(target_date)
+
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {
+            "date": target_date,
+            "habits": habits,
+            "entries": entries.entries if entries else {},
+            "prev_date": (target_date - timedelta(days=1)).isoformat(),
+            "next_date": (target_date + timedelta(days=1)).isoformat(),
+            "is_today": target_date == date.today(),
+        },
+    )
+
+
+@app.post("/save")
+async def save(request: Request) -> RedirectResponse:
+    """Save habit entries from form submission."""
+    form = await request.form()
+    day = date.fromisoformat(str(form["date"]))
+    habits = storage.load_habits()
+
+    entries: dict[str, BinaryEntry | SingleSelectEntry | JournalEntry] = {}
+    for habit in habits:
+        field_name = f"habit_{habit.id}"
+        # Exhaustive pattern matching with assert_never
+        match habit:
+            case BinaryHabit():
+                entries[habit.id] = BinaryEntry(value=field_name in form)
+            case SingleSelectHabit():
+                if field_name in form:
+                    entries[habit.id] = SingleSelectEntry(value=str(form[field_name]))
+            case JournalHabit():
+                entries[habit.id] = JournalEntry(value=str(form.get(field_name, "")))
+            case _ as unreachable:
+                assert_never(unreachable)
+
+    storage.save_entries(storage.DailyEntries(date=day, entries=entries))
+    return RedirectResponse(url=f"/?day={day.isoformat()}", status_code=303)

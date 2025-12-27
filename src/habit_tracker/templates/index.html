@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav class="date-nav">
+    <a href="/?day={{ prev_date }}">&larr; Prev</a>
+    <h2>{{ date.strftime('%A, %b %d') }}</h2>
+    {% if not is_today %}
+    <a href="/?day={{ next_date }}">Next &rarr;</a>
+    {% else %}
+    <span></span>
+    {% endif %}
+</nav>
+
+<form method="post" action="/save">
+    <input type="hidden" name="date" value="{{ date.isoformat() }}">
+
+    {% for habit in habits %}
+    <div class="habit-group">
+        <div class="habit-label">{{ habit.name }}</div>
+
+        {% if habit.type == "binary" %}
+        <label>
+            <input type="checkbox" name="habit_{{ habit.id }}"
+                   {% if entries.get(habit.id) and entries[habit.id].value %}checked{% endif %}>
+            Yes
+        </label>
+
+        {% elif habit.type == "single_select" %}
+        <fieldset>
+            <div class="options">
+            {% for option in habit.options %}
+            <label>
+                <input type="radio" name="habit_{{ habit.id }}" value="{{ option }}"
+                       {% if entries.get(habit.id) and entries[habit.id].value == option %}checked{% endif %}>
+                {{ option }}
+            </label>
+            {% endfor %}
+            </div>
+        </fieldset>
+
+        {% elif habit.type == "journal" %}
+        <textarea name="habit_{{ habit.id }}" rows="3">{{ entries.get(habit.id).value if entries.get(habit.id) else '' }}</textarea>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit">Save</button>
+</form>
+{% endblock %}

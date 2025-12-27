@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <style>
+        :root { --pico-font-size: 16px; }
+        .container { max-width: 600px; padding: 1rem; }
+        .date-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .habit-group { margin-bottom: 1.5rem; }
+        .habit-label { font-weight: 600; margin-bottom: 0.5rem; }
+        fieldset { border: none; padding: 0; margin: 0; }
+        .options { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .options label { display: flex; align-items: center; gap: 0.25rem; }
+    </style>
+</head>
+<body>
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
