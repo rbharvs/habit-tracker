@@ -85,4 +85,4 @@ def save(request: Request, storage: Storage, form: FormDataDep) -> Response:
         html += "Saved!</span>"
         return HTMLResponse(html)
 
-    return RedirectResponse(url=f"/?day={day.isoformat()}", status_code=303)
+    return RedirectResponse(url=f"./?day={day.isoformat()}", status_code=303)

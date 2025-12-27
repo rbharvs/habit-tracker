@@ -2,16 +2,16 @@
 
 {% block content %}
 <nav class="date-nav">
-    <a href="/?day={{ prev_date }}">&larr; Prev</a>
+    <a href="?day={{ prev_date }}">&larr; Prev</a>
     <h2>{{ date.strftime('%A, %b %d') }}</h2>
     {% if not is_today %}
-    <a href="/?day={{ next_date }}">Next &rarr;</a>
+    <a href="?day={{ next_date }}">Next &rarr;</a>
     {% else %}
     <span></span>
     {% endif %}
 </nav>
 
-<form method="post" action="/save" hx-post="/save" hx-target="#save-status" hx-swap="innerHTML">
+<form method="post" action="save" hx-post="save" hx-target="#save-status" hx-swap="innerHTML">
     <input type="hidden" name="date" value="{{ date.isoformat() }}">
 
     {% for habit in habits %}

@@ -62,3 +62,44 @@ def test_handler_processes_event():
     assert "statusCode" in response
     assert response["statusCode"] == 200
     assert "text/html" in response.get("headers", {}).get("content-type", "")
+
+
+def test_handler_redirects_missing_trailing_slash():
+    """Request to /Prod (no slash) redirects to /Prod/ for relative URL resolution."""
+    from habit_tracker.handler import handler
+
+    # Request to /Prod WITHOUT trailing slash
+    event = {
+        "resource": "/",
+        "path": "/",
+        "httpMethod": "GET",
+        "headers": {
+            "Host": "test.execute-api.us-east-1.amazonaws.com",
+            "Accept": "text/html",
+        },
+        "queryStringParameters": None,
+        "pathParameters": None,
+        "stageVariables": None,
+        "requestContext": {
+            "resourceId": "root",
+            "resourcePath": "/",
+            "httpMethod": "GET",
+            "path": "/Prod",  # NO trailing slash - this is the problem case
+            "stage": "Prod",
+            "requestTimeEpoch": 1735689600000,
+            "requestId": "test-request-id",
+            "identity": {"sourceIp": "127.0.0.1"},
+            "domainName": "test.execute-api.us-east-1.amazonaws.com",
+            "apiId": "abcdef123",
+        },
+        "body": None,
+        "isBase64Encoded": False,
+    }
+    context = MagicMock()
+    context.get_remaining_time_in_millis = MagicMock(return_value=30000)
+
+    response = handler(event, context)
+
+    # Should redirect to add trailing slash
+    assert response["statusCode"] == 307
+    assert response["headers"]["location"] == "/Prod/"

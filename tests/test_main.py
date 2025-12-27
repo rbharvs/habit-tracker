@@ -211,3 +211,39 @@ def test_index_has_save_button(test_storage):
     response = client.get("/")
     assert '<button type="submit"' in response.text
     assert "Save" in response.text
+
+
+def test_save_redirect_uses_relative_url(test_storage):
+    """POST /save redirects with relative URL for API Gateway compatibility."""
+    test_storage.save_habits([BinaryHabit(id="test", name="Test")])
+
+    client = TestClient(app)
+    response = client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_test": "on"},
+        follow_redirects=False,
+    )
+    location = response.headers["location"]
+    # Must be relative (starts with ./) not absolute (starts with /)
+    assert location.startswith("./"), f"Expected relative URL, got: {location}"
+    assert not location.startswith("/"), f"URL must not be absolute: {location}"
+
+
+def test_template_uses_relative_urls(test_storage):
+    """Template uses relative URLs for API Gateway stage prefix compatibility."""
+    test_storage.save_habits([BinaryHabit(id="test", name="Test")])
+
+    client = TestClient(app)
+    response = client.get("/?day=2025-01-05")
+
+    # Form action should be relative
+    assert 'action="save"' in response.text, "Form action must be relative 'save'"
+    assert 'action="/save"' not in response.text, "Form action must not be absolute"
+
+    # Nav links should be relative (no leading slash)
+    assert 'href="?day=' in response.text, "Nav links must be relative '?day='"
+    assert 'href="/?day=' not in response.text, "Nav links must not be absolute"
+
+    # HTMX post should be relative
+    assert 'hx-post="save"' in response.text, "HTMX post must be relative 'save'"
+    assert 'hx-post="/save"' not in response.text, "HTMX post must not be absolute"
