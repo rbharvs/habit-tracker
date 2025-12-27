@@ -630,12 +630,12 @@ def test_save_and_load_entries(dynamodb_storage):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes (including new DynamoDB tests)
-- [ ] `make fix` passes
+- [x] `make test` passes (including new DynamoDB tests)
+- [x] `make fix` passes
 
 #### Manual Verification:
-- [ ] `STORAGE_BACKEND=json make dev` works
-- [ ] DynamoDB storage tests use moto (no real AWS calls)
+- [x] `STORAGE_BACKEND=json make dev` works
+- [x] DynamoDB storage tests use moto (no real AWS calls)
 
 ---
 

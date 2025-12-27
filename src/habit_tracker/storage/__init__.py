@@ -9,16 +9,32 @@ from .json_storage import JsonFileStorage
 from .protocol import StorageProtocol
 
 
+def _get_storage_backend() -> str:
+    return os.environ.get("STORAGE_BACKEND", "json")
+
+
 @lru_cache
 def _get_json_storage() -> JsonFileStorage:
-    """Get singleton JSON storage instance."""
     data_dir = Path(os.environ.get("DATA_DIR", "data"))
     return JsonFileStorage(data_dir=data_dir)
 
 
+@lru_cache
+def _get_dynamodb_storage():
+    from .dynamodb_storage import DynamoDBStorage
+
+    return DynamoDBStorage(
+        table_name=os.environ.get("TABLE_NAME", "habit-tracker"),
+        region_name=os.environ.get("AWS_REGION", "us-east-1"),
+        endpoint_url=os.environ.get("DYNAMODB_ENDPOINT_URL"),
+    )
+
+
 def get_storage() -> StorageProtocol:
-    """Get storage implementation based on environment."""
-    # Phase 2: JSON only. Phase 3 adds DynamoDB.
+    """Get storage implementation based on STORAGE_BACKEND env var."""
+    backend = _get_storage_backend()
+    if backend == "dynamodb":
+        return _get_dynamodb_storage()
     return _get_json_storage()
 
 
