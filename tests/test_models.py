@@ -273,6 +273,19 @@ def test_select_habit_rejects_empty_options():
         MultiSelectHabit(id="exercises", name="Exercises", options=[])
 
 
+def test_select_habit_rejects_more_than_9_options():
+    """SingleSelectHabit and MultiSelectHabit reject more than 9 options."""
+    from habit_tracker.models import MultiSelectHabit, SingleSelectHabit
+
+    ten_options = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+
+    with pytest.raises(ValidationError):
+        SingleSelectHabit(id="rating", name="Rating", options=ten_options)
+
+    with pytest.raises(ValidationError):
+        MultiSelectHabit(id="tags", name="Tags", options=ten_options)
+
+
 # =============================================================================
 # Discriminated Union Tests for New Types
 # =============================================================================

@@ -6,7 +6,10 @@ from pydantic import BaseModel, Field, NonNegativeInt
 # Constrained types for habit fields
 HabitId = Annotated[str, Field(min_length=1)]
 HabitName = Annotated[str, Field(min_length=1)]
-NonEmptyOptions = Annotated[list[str], Field(min_length=1)]
+NonEmptyOptions = Annotated[
+    list[str],
+    Field(min_length=1, max_length=9, description="1-9 options (keyboard shortcuts)"),
+]
 
 # =============================================================================
 # Habit Definitions (discriminated union by "type" field)
