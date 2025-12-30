@@ -15,10 +15,12 @@
     <input type="hidden" name="date" value="{{ date.isoformat() }}">
 
     {% for habit in habits %}
-    <div class="habit-group">
-        <div class="habit-label">{{ habit.name }}</div>
-
+    <div class="habit-group" tabindex="0" data-habit-type="{{ habit.type }}" data-habit-id="{{ habit.id }}">
         {% if habit.type == "binary" %}
+        <div class="habit-header">
+            <span class="habit-label">{{ habit.name }}</span>
+            <span class="keyboard-hint">Press Y / N</span>
+        </div>
         <label>
             <input type="checkbox" name="habit_{{ habit.id }}"
                    {% if entries.get(habit.id) and entries[habit.id].value %}checked{% endif %}>
@@ -26,22 +28,37 @@
         </label>
 
         {% elif habit.type == "single_select" %}
+        <div class="habit-header">
+            <span class="habit-label">{{ habit.name }}</span>
+            <span class="keyboard-hint">Press 1-{{ habit.options|length }}</span>
+        </div>
         <fieldset>
             <div class="options">
             {% for option in habit.options %}
-            <label>
-                <input type="radio" name="habit_{{ habit.id }}" value="{{ option }}"
-                       {% if entries.get(habit.id) and entries[habit.id].value == option %}checked{% endif %}>
-                {{ option }}
-            </label>
+            <div class="option-item">
+                <span class="option-number">{{ loop.index }}</span>
+                <label>
+                    <input type="radio" name="habit_{{ habit.id }}" value="{{ option }}"
+                           {% if entries.get(habit.id) and entries[habit.id].value == option %}checked{% endif %}>
+                    {{ option }}
+                </label>
+            </div>
             {% endfor %}
             </div>
         </fieldset>
 
         {% elif habit.type == "journal" %}
+        <div class="habit-header">
+            <span class="habit-label">{{ habit.name }}</span>
+            <span class="keyboard-hint">Tab to focus, type freely</span>
+        </div>
         <textarea name="habit_{{ habit.id }}" rows="3">{{ entries.get(habit.id).value if entries.get(habit.id) else '' }}</textarea>
 
         {% elif habit.type == "numeric" %}
+        <div class="habit-header">
+            <span class="habit-label">{{ habit.name }}</span>
+            <span class="keyboard-hint">Tab to focus, enter number</span>
+        </div>
         <div class="numeric-input">
             <input type="number" name="habit_{{ habit.id }}"
                    value="{{ entries.get(habit.id).value if entries.get(habit.id) else '' }}"
@@ -50,18 +67,29 @@
         </div>
 
         {% elif habit.type == "time" %}
+        <div class="habit-header">
+            <span class="habit-label">{{ habit.name }}</span>
+            <span class="keyboard-hint">Tab to focus, enter time</span>
+        </div>
         <input type="time" name="habit_{{ habit.id }}"
                value="{{ entries.get(habit.id).value.strftime('%H:%M') if entries.get(habit.id) else '' }}">
 
         {% elif habit.type == "multi_select" %}
+        <div class="habit-header">
+            <span class="habit-label">{{ habit.name }}</span>
+            <span class="keyboard-hint">Press 1-{{ habit.options|length }} to toggle</span>
+        </div>
         <fieldset>
             <div class="options">
             {% for option in habit.options %}
-            <label>
-                <input type="checkbox" name="habit_{{ habit.id }}" value="{{ option }}"
-                       {% if entries.get(habit.id) and option in entries[habit.id].value %}checked{% endif %}>
-                {{ option }}
-            </label>
+            <div class="option-item">
+                <span class="option-number">{{ loop.index }}</span>
+                <label>
+                    <input type="checkbox" name="habit_{{ habit.id }}" value="{{ option }}" tabindex="-1"
+                           {% if entries.get(habit.id) and option in entries[habit.id].value %}checked{% endif %}>
+                    {{ option }}
+                </label>
+            </div>
             {% endfor %}
             </div>
         </fieldset>
@@ -88,6 +116,53 @@ document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'Enter') {
         document.querySelector('form').requestSubmit();
     }
+});
+
+// Keyboard entry for habits
+document.querySelectorAll('.habit-group').forEach(group => {
+    group.addEventListener('keydown', (e) => {
+        const habitType = group.dataset.habitType;
+        const key = e.key.toLowerCase();
+
+        // Ignore if typing in a text field
+        if (['INPUT', 'TEXTAREA'].includes(e.target.tagName) &&
+            !['checkbox', 'radio'].includes(e.target.type)) {
+            return;
+        }
+
+        if (habitType === 'binary') {
+            const checkbox = group.querySelector('input[type="checkbox"]');
+            if (key === 'y') {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                e.preventDefault();
+            } else if (key === 'n') {
+                checkbox.checked = false;
+                checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                e.preventDefault();
+            }
+        } else if (habitType === 'single_select') {
+            const num = parseInt(key);
+            if (num >= 1 && num <= 9) {
+                const radios = group.querySelectorAll('input[type="radio"]');
+                if (num <= radios.length) {
+                    radios[num - 1].checked = true;
+                    radios[num - 1].dispatchEvent(new Event('change', { bubbles: true }));
+                    e.preventDefault();
+                }
+            }
+        } else if (habitType === 'multi_select') {
+            const num = parseInt(key);
+            if (num >= 1 && num <= 9) {
+                const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+                if (num <= checkboxes.length) {
+                    checkboxes[num - 1].checked = !checkboxes[num - 1].checked;
+                    checkboxes[num - 1].dispatchEvent(new Event('change', { bubbles: true }));
+                    e.preventDefault();
+                }
+            }
+        }
+    });
 });
 </script>
 {% endblock %}

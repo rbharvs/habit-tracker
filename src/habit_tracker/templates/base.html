@@ -12,11 +12,62 @@
         :root { --pico-font-size: 16px; }
         .container { max-width: 600px; padding: 1rem; }
         .date-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .habit-group { margin-bottom: 1.5rem; }
+        .habit-group {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 0.5rem;
+        }
         .habit-label { font-weight: 600; margin-bottom: 0.5rem; }
         fieldset { border: none; padding: 0; margin: 0; }
-        .options { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-        .options label { display: flex; align-items: center; gap: 0.25rem; }
+        .options { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; }
+        .options label { display: flex; align-items: center; gap: 0; }
+        /* Keyboard entry styles */
+        .habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .keyboard-hint {
+            font-size: 0.75rem;
+            color: var(--pico-muted-color);
+            background: var(--pico-secondary-background);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .option-item label { margin-bottom: 0; }
+        .option-item input { margin-bottom: 0; }
+        .option-number {
+            font-size: 0.7rem;
+            color: var(--pico-muted-color);
+            background: var(--pico-secondary-background);
+            width: 1.25rem;
+            height: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        .habit-group:focus {
+            border-color: var(--pico-primary);
+            outline: none;
+        }
+        .habit-group:focus-within {
+            border-color: var(--pico-primary);
+        }
+        /* Hide keyboard hints on mobile */
+        @media (max-width: 600px) {
+            .keyboard-hint { display: none; }
+            .option-number { display: none; }
+        }
         @media (max-width: 600px) {
             .options { flex-direction: column; }
             button[type="submit"] { width: 100%; padding: 1rem; font-size: 1.2rem; }
