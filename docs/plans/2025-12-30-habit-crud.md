@@ -567,18 +567,18 @@ async function confirmHardDelete(habitId, habitName) {
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Tests pass: `make test`
-- [ ] Type check passes: `make fix`
+- [x] Tests pass: `make test`
+- [x] Type check passes: `make fix`
 
 #### Manual Verification:
-- [ ] Navigate to `/habits` from any page
-- [ ] See list of habits with type badges
-- [ ] Create a new binary habit via form
-- [ ] Create a single-select habit with options
-- [ ] Archive a habit (soft delete)
-- [ ] Delete a habit permanently (see entry count warning)
-- [ ] Archived habits show with "Archived" badge
-- [ ] Archived habits don't appear on daily entry page
+- [x] Navigate to `/habits` from any page
+- [x] See list of habits with type badges
+- [x] Create a new binary habit via form
+- [x] Create a single-select habit with options
+- [x] Archive a habit (soft delete)
+- [x] Delete a habit permanently (see entry count warning)
+- [x] Archived habits show with "Archived" badge
+- [x] Archived habits don't appear on daily entry page
 
 ---
 

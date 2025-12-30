@@ -64,5 +64,13 @@ function toggleOptions() {
     optionsField.style.display = ['single_select', 'multi_select'].includes(type) ? 'block' : 'none';
     unitField.style.display = type === 'numeric' ? 'block' : 'none';
 }
+
+// Reset form after successful habit creation
+document.body.addEventListener('htmx:afterSwap', (e) => {
+    if (e.detail.requestConfig.path === 'habits' && e.detail.requestConfig.verb === 'post') {
+        document.querySelector('form').reset();
+        toggleOptions(); // Reset conditional field visibility
+    }
+});
 </script>
 {% endblock %}

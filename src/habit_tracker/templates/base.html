@@ -27,26 +27,68 @@
             transition: opacity 0.3s;
         }
         .saved-indicator.show { opacity: 1; }
+
+        /* Habit management styles */
+        .habit-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .habit-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .habit-list-item.archived {
+            opacity: 0.6;
+        }
+        .habit-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .habit-type-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            background: var(--pico-secondary-background);
+        }
+        .habit-id {
+            color: var(--pico-muted-color);
+        }
+        .archived-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .habit-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .habit-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            margin: 0;
+        }
+        .no-habits {
+            color: var(--pico-muted-color);
+            text-align: center;
+            padding: 1rem;
+            list-style: none;
+        }
     </style>
 </head>
 <body>
     <main class="container">
         {% block content %}{% endblock %}
     </main>
-    <script>
-    // Auto-save on change
-    document.querySelectorAll('input, textarea').forEach(el => {
-        el.addEventListener('change', () => {
-            document.querySelector('form').requestSubmit();
-        });
-    });
-
-    // Keyboard shortcut: Ctrl+Enter to save
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'Enter') {
-            document.querySelector('form').requestSubmit();
-        }
-    });
-    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

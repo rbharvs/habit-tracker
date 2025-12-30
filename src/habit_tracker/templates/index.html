@@ -73,3 +73,21 @@
     <span id="save-status"></span>
 </form>
 {% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-save on change
+document.querySelectorAll('input, textarea').forEach(el => {
+    el.addEventListener('change', () => {
+        document.querySelector('form').requestSubmit();
+    });
+});
+
+// Keyboard shortcut: Ctrl+Enter to save
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+        document.querySelector('form').requestSubmit();
+    }
+});
+</script>
+{% endblock %}
