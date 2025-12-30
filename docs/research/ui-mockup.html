@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker UI Mockup</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        :root {
+            --pico-font-size: 16px;
+            --color-complete: #22c55e;
+            --color-partial: #fbbf24;
+            --color-missed: #ef4444;
+            --color-empty: #e5e7eb;
+        }
+
+        body { padding: 1rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--pico-muted-border-color);
+            padding-bottom: 0.5rem;
+        }
+        .nav-tabs a {
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 0.25rem 0.25rem 0 0;
+        }
+        .nav-tabs a.active {
+            background: var(--pico-primary);
+            color: white;
+        }
+
+        /* Section styling */
+        .section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            border: 2px dashed var(--pico-muted-border-color);
+            border-radius: 0.5rem;
+        }
+        .section-label {
+            background: var(--pico-background-color);
+            padding: 0 0.5rem;
+            margin-top: -2rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            font-weight: bold;
+            color: var(--pico-muted-color);
+        }
+
+        /* Date navigation */
+        .date-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Habit entry with keyboard hints */
+        .habit-group {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 0.5rem;
+        }
+        .habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .habit-label { font-weight: 600; }
+        .keyboard-hint {
+            font-size: 0.75rem;
+            color: var(--pico-muted-color);
+            background: var(--pico-secondary-background);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+
+        /* Options with number hints */
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .option-number {
+            font-size: 0.7rem;
+            color: var(--pico-muted-color);
+            background: var(--pico-secondary-background);
+            width: 1.25rem;
+            height: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+
+        /* Calendar grid */
+        .calendar-container {
+            margin-top: 1rem;
+        }
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .weekday-header {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.5rem;
+            color: var(--pico-muted-color);
+        }
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .day:hover:not(.empty) {
+            transform: scale(1.1);
+            outline: 2px solid var(--pico-primary);
+        }
+        .day.empty { background: transparent; cursor: default; }
+        .day.complete { background: var(--color-complete); color: white; }
+        .day.partial { background: var(--color-partial); color: #1a1a1a; }
+        .day.missed { background: var(--color-missed); color: white; }
+        .day.none { background: var(--color-empty); }
+        .day.today { box-shadow: inset 0 0 0 2px var(--pico-primary); font-weight: bold; }
+
+        /* Habit CRUD list */
+        .habit-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .habit-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .habit-list-item .habit-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .habit-type-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            background: var(--pico-secondary-background);
+        }
+        .habit-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .habit-actions button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            margin: 0;
+        }
+        .color-swatch {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+        }
+
+        /* Color picker in CRUD */
+        .color-config {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: var(--pico-secondary-background);
+            border-radius: 0.25rem;
+        }
+        .color-config label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .color-config input[type="color"] {
+            width: 2rem;
+            height: 1.5rem;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .legend-swatch {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Status bar */
+        .status-bar {
+            font-size: 0.8rem;
+            color: var(--pico-muted-color);
+            padding: 0.5rem;
+            background: var(--pico-secondary-background);
+            border-radius: 0.25rem;
+            margin-top: 1rem;
+        }
+
+        /* Warning banner */
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>Habit Tracker - UI Mockup</h1>
+        <p style="color: var(--pico-muted-color); margin-bottom: 2rem;">
+            This is a rough visual mockup showing the proposed UI features. Open in a browser to view.
+        </p>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <a href="#" class="active">Today</a>
+            <a href="#">Calendar</a>
+            <a href="#">Manage Habits</a>
+        </nav>
+
+        <!-- ============================================ -->
+        <!-- SECTION 1: Daily Entry with Keyboard Hints -->
+        <!-- ============================================ -->
+        <div class="section">
+            <div class="section-label">VIEW 1: Daily Entry (Keyboard Support)</div>
+
+            <nav class="date-nav">
+                <a href="#">&larr; Prev</a>
+                <h2>Friday, Dec 27</h2>
+                <span style="color: var(--pico-muted-color);">(Today)</span>
+            </nav>
+
+            <!-- Binary Habit -->
+            <div class="habit-group">
+                <div class="habit-header">
+                    <span class="habit-label">Did you work out?</span>
+                    <span class="keyboard-hint">Press Y / N</span>
+                </div>
+                <label>
+                    <input type="checkbox" checked>
+                    Yes
+                </label>
+            </div>
+
+            <!-- Single Select Habit -->
+            <div class="habit-group">
+                <div class="habit-header">
+                    <span class="habit-label">How's your mood?</span>
+                    <span class="keyboard-hint">Press 1-4</span>
+                </div>
+                <fieldset>
+                    <div class="options">
+                        <div class="option-item">
+                            <span class="option-number">1</span>
+                            <label><input type="radio" name="mood" value="great"> Great</label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-number">2</span>
+                            <label><input type="radio" name="mood" value="good" checked> Good</label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-number">3</span>
+                            <label><input type="radio" name="mood" value="okay"> Okay</label>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-number">4</span>
+                            <label><input type="radio" name="mood" value="bad"> Bad</label>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- Journal Habit -->
+            <div class="habit-group">
+                <div class="habit-header">
+                    <span class="habit-label">Daily Notes</span>
+                    <span class="keyboard-hint">Tab to focus, type freely</span>
+                </div>
+                <textarea rows="3" placeholder="What happened today?">Had a productive morning, finished the UI mockup...</textarea>
+            </div>
+
+            <div class="status-bar">
+                Auto-saves on change &bull; Last saved: 2:34 PM &bull; Keyboard: Tab between fields
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 2: Calendar View with Color-Coding -->
+        <!-- ============================================ -->
+        <div class="section">
+            <div class="section-label">VIEW 2: Calendar View (Per Habit)</div>
+
+            <div style="margin-bottom: 1rem;">
+                <label for="habit-select">Viewing habit:</label>
+                <select id="habit-select" style="display: inline-block; width: auto; margin-left: 0.5rem;">
+                    <option>Did you work out?</option>
+                    <option>How's your mood?</option>
+                    <option>Daily Notes</option>
+                </select>
+            </div>
+
+            <div class="calendar-container">
+                <nav class="calendar-nav">
+                    <button class="secondary outline" style="padding: 0.5rem 1rem;">&larr; Nov</button>
+                    <h3 style="margin: 0;">December 2025</h3>
+                    <button class="secondary outline" style="padding: 0.5rem 1rem;">Jan &rarr;</button>
+                </nav>
+
+                <div class="calendar-grid">
+                    <!-- Weekday headers -->
+                    <div class="weekday-header">Sun</div>
+                    <div class="weekday-header">Mon</div>
+                    <div class="weekday-header">Tue</div>
+                    <div class="weekday-header">Wed</div>
+                    <div class="weekday-header">Thu</div>
+                    <div class="weekday-header">Fri</div>
+                    <div class="weekday-header">Sat</div>
+
+                    <!-- Week 1 -->
+                    <div class="day empty"></div>
+                    <div class="day complete">1</div>
+                    <div class="day complete">2</div>
+                    <div class="day complete">3</div>
+                    <div class="day missed">4</div>
+                    <div class="day complete">5</div>
+                    <div class="day missed">6</div>
+
+                    <!-- Week 2 -->
+                    <div class="day complete">7</div>
+                    <div class="day complete">8</div>
+                    <div class="day complete">9</div>
+                    <div class="day missed">10</div>
+                    <div class="day complete">11</div>
+                    <div class="day complete">12</div>
+                    <div class="day complete">13</div>
+
+                    <!-- Week 3 -->
+                    <div class="day missed">14</div>
+                    <div class="day complete">15</div>
+                    <div class="day complete">16</div>
+                    <div class="day complete">17</div>
+                    <div class="day complete">18</div>
+                    <div class="day complete">19</div>
+                    <div class="day missed">20</div>
+
+                    <!-- Week 4 -->
+                    <div class="day complete">21</div>
+                    <div class="day complete">22</div>
+                    <div class="day missed">23</div>
+                    <div class="day complete">24</div>
+                    <div class="day complete">25</div>
+                    <div class="day complete">26</div>
+                    <div class="day complete today">27</div>
+
+                    <!-- Week 5 -->
+                    <div class="day none">28</div>
+                    <div class="day none">29</div>
+                    <div class="day none">30</div>
+                    <div class="day none">31</div>
+                    <div class="day empty"></div>
+                    <div class="day empty"></div>
+                    <div class="day empty"></div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: var(--color-complete);"></div>
+                        <span>Yes (18)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: var(--color-missed);"></div>
+                        <span>No (6)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: var(--color-empty);"></div>
+                        <span>No entry (4)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 3: Single Select Calendar Example -->
+        <!-- ============================================ -->
+        <div class="section">
+            <div class="section-label">VIEW 2b: Calendar for Single-Select (Mood)</div>
+
+            <div style="margin-bottom: 1rem;">
+                <strong>Viewing:</strong> How's your mood?
+            </div>
+
+            <div class="calendar-container">
+                <nav class="calendar-nav">
+                    <button class="secondary outline" style="padding: 0.5rem 1rem;">&larr;</button>
+                    <h3 style="margin: 0;">December 2025</h3>
+                    <button class="secondary outline" style="padding: 0.5rem 1rem;">&rarr;</button>
+                </nav>
+
+                <div class="calendar-grid">
+                    <div class="weekday-header">Sun</div>
+                    <div class="weekday-header">Mon</div>
+                    <div class="weekday-header">Tue</div>
+                    <div class="weekday-header">Wed</div>
+                    <div class="weekday-header">Thu</div>
+                    <div class="weekday-header">Fri</div>
+                    <div class="weekday-header">Sat</div>
+
+                    <!-- Using custom colors for each option -->
+                    <div class="day empty"></div>
+                    <div class="day" style="background: #22c55e; color: white;">1</div>
+                    <div class="day" style="background: #86efac;">2</div>
+                    <div class="day" style="background: #22c55e; color: white;">3</div>
+                    <div class="day" style="background: #fbbf24;">4</div>
+                    <div class="day" style="background: #86efac;">5</div>
+                    <div class="day" style="background: #ef4444; color: white;">6</div>
+
+                    <div class="day" style="background: #86efac;">7</div>
+                    <div class="day" style="background: #22c55e; color: white;">8</div>
+                    <div class="day" style="background: #22c55e; color: white;">9</div>
+                    <div class="day" style="background: #fbbf24;">10</div>
+                    <div class="day" style="background: #86efac;">11</div>
+                    <div class="day" style="background: #22c55e; color: white;">12</div>
+                    <div class="day" style="background: #86efac;">13</div>
+
+                    <div class="day" style="background: #fbbf24;">14</div>
+                    <div class="day" style="background: #86efac;">15</div>
+                    <div class="day" style="background: #22c55e; color: white;">16</div>
+                    <div class="day" style="background: #22c55e; color: white;">17</div>
+                    <div class="day" style="background: #86efac;">18</div>
+                    <div class="day" style="background: #22c55e; color: white;">19</div>
+                    <div class="day" style="background: #fbbf24;">20</div>
+
+                    <div class="day" style="background: #86efac;">21</div>
+                    <div class="day" style="background: #22c55e; color: white;">22</div>
+                    <div class="day" style="background: #ef4444; color: white;">23</div>
+                    <div class="day" style="background: #86efac;">24</div>
+                    <div class="day" style="background: #22c55e; color: white;">25</div>
+                    <div class="day" style="background: #86efac;">26</div>
+                    <div class="day today" style="background: #22c55e; color: white;">27</div>
+
+                    <div class="day none">28</div>
+                    <div class="day none">29</div>
+                    <div class="day none">30</div>
+                    <div class="day none">31</div>
+                    <div class="day empty"></div>
+                    <div class="day empty"></div>
+                    <div class="day empty"></div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #22c55e;"></div>
+                        <span>Great (10)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #86efac;"></div>
+                        <span>Good (11)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #fbbf24;"></div>
+                        <span>Okay (4)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-swatch" style="background: #ef4444;"></div>
+                        <span>Bad (2)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 4: Habit CRUD -->
+        <!-- ============================================ -->
+        <div class="section">
+            <div class="section-label">VIEW 3: Manage Habits (CRUD)</div>
+
+            <ul class="habit-list">
+                <li class="habit-list-item">
+                    <div class="habit-info">
+                        <span class="habit-type-badge">Binary</span>
+                        <span><strong>Did you work out?</strong></span>
+                        <div>
+                            <span class="color-swatch" style="background: #22c55e;" title="Yes color"></span>
+                            <span class="color-swatch" style="background: #ef4444;" title="No color"></span>
+                        </div>
+                    </div>
+                    <div class="habit-actions">
+                        <button class="outline secondary">Edit</button>
+                        <button class="outline secondary">Delete</button>
+                    </div>
+                </li>
+
+                <li class="habit-list-item">
+                    <div class="habit-info">
+                        <span class="habit-type-badge">Single Select</span>
+                        <span><strong>How's your mood?</strong></span>
+                        <div>
+                            <span class="color-swatch" style="background: #22c55e;" title="Great"></span>
+                            <span class="color-swatch" style="background: #86efac;" title="Good"></span>
+                            <span class="color-swatch" style="background: #fbbf24;" title="Okay"></span>
+                            <span class="color-swatch" style="background: #ef4444;" title="Bad"></span>
+                        </div>
+                    </div>
+                    <div class="habit-actions">
+                        <button class="outline secondary">Edit</button>
+                        <button class="outline secondary">Delete</button>
+                    </div>
+                </li>
+
+                <li class="habit-list-item">
+                    <div class="habit-info">
+                        <span class="habit-type-badge">Journal</span>
+                        <span><strong>Daily Notes</strong></span>
+                    </div>
+                    <div class="habit-actions">
+                        <button class="outline secondary">Edit</button>
+                        <button class="outline secondary">Delete</button>
+                    </div>
+                </li>
+            </ul>
+
+            <button style="margin-top: 1rem;">+ Add New Habit</button>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 5: Edit Habit Form -->
+        <!-- ============================================ -->
+        <div class="section">
+            <div class="section-label">VIEW 3b: Edit Habit Form</div>
+
+            <div class="warning">
+                <strong>Warning:</strong> This habit has 27 entries. Changing the type or deleting will affect existing data.
+            </div>
+
+            <form>
+                <label>
+                    Habit Name
+                    <input type="text" value="How's your mood?">
+                </label>
+
+                <label>
+                    Type
+                    <select disabled>
+                        <option>Binary (Yes/No)</option>
+                        <option selected>Single Select</option>
+                        <option>Journal (Free text)</option>
+                    </select>
+                    <small>Type cannot be changed after entries exist</small>
+                </label>
+
+                <fieldset>
+                    <legend>Options & Colors</legend>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="text" value="Great" style="flex: 1;">
+                            <input type="color" value="#22c55e" style="width: 3rem; padding: 0.25rem;">
+                            <button type="button" class="outline secondary" style="padding: 0.5rem;">X</button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="text" value="Good" style="flex: 1;">
+                            <input type="color" value="#86efac" style="width: 3rem; padding: 0.25rem;">
+                            <button type="button" class="outline secondary" style="padding: 0.5rem;">X</button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="text" value="Okay" style="flex: 1;">
+                            <input type="color" value="#fbbf24" style="width: 3rem; padding: 0.25rem;">
+                            <button type="button" class="outline secondary" style="padding: 0.5rem;">X</button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="text" value="Bad" style="flex: 1;">
+                            <input type="color" value="#ef4444" style="width: 3rem; padding: 0.25rem;">
+                            <button type="button" class="outline secondary" style="padding: 0.5rem;">X</button>
+                        </div>
+                    </div>
+                    <button type="button" class="outline" style="margin-top: 0.5rem;">+ Add Option</button>
+                </fieldset>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button type="submit">Save Changes</button>
+                    <button type="button" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION 6: Add Binary Habit -->
+        <!-- ============================================ -->
+        <div class="section">
+            <div class="section-label">VIEW 3c: Add Binary Habit Form</div>
+
+            <form>
+                <label>
+                    Habit Name
+                    <input type="text" placeholder="e.g., Did you meditate?">
+                </label>
+
+                <label>
+                    Type
+                    <select>
+                        <option selected>Binary (Yes/No)</option>
+                        <option>Single Select</option>
+                        <option>Journal (Free text)</option>
+                    </select>
+                </label>
+
+                <fieldset>
+                    <legend>Colors for Calendar View</legend>
+                    <div class="color-config">
+                        <label>
+                            Yes:
+                            <input type="color" value="#22c55e">
+                        </label>
+                        <label>
+                            No:
+                            <input type="color" value="#ef4444">
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button type="submit">Create Habit</button>
+                    <button type="button" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+</body>
+</html>

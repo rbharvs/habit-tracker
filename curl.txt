@@ -1,0 +1,134 @@
+curl 'https://habits.brettharvey.sh/' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -b 'CF_AppSession=c6fee8b7b6d713f6' \
+  -H 'priority: u=0, i' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: none' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' ;
+curl 'https://rbharvey.cloudflareaccess.com/cdn-cgi/access/login/habits.brettharvey.sh?kid=1f9d5af7ac411fc521f3331d39bac9bfea693a799a5e8e755def56e04063a4ef&meta=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ijg0NTllYWFmNjJmN2RlNjk1OWE1ZjZmMTNiODlmNGVjNWQyYTA3Mzc4MWRlNTc0OGE1MGJlOTBmYTJmYWQ3YmQifQ.eyJ0eXBlIjoibWV0YSIsImF1ZCI6IjFmOWQ1YWY3YWM0MTFmYzUyMWYzMzMxZDM5YmFjOWJmZWE2OTNhNzk5YTVlOGU3NTVkZWY1NmUwNDA2M2E0ZWYiLCJob3N0bmFtZSI6ImhhYml0cy5icmV0dGhhcnZleS5zaCIsInJlZGlyZWN0X3VybCI6Ii8iLCJzZXJ2aWNlX3Rva2VuX3N0YXR1cyI6ZmFsc2UsImlzX3dhcnAiOmZhbHNlLCJpc19nYXRld2F5IjpmYWxzZSwiZXhwIjoxNzY2OTc3MDIzLCJuYmYiOjE3NjY5NzY3MjMsImlhdCI6MTc2Njk3NjcyMywiYXV0aF9zdGF0dXMiOiJOT05FIiwibXRsc19hdXRoIjp7ImNlcnRfaXNzdWVyX2RuIjoiIiwiY2VydF9zZXJpYWwiOiIiLCJjZXJ0X2lzc3Vlcl9za2kiOiIiLCJjZXJ0X3ByZXNlbnRlZCI6ZmFsc2UsImNvbW1vbl9uYW1lIjoiIiwiYXV0aF9zdGF0dXMiOiJOT05FIn0sInJlYWxfY291bnRyeSI6IlVTIiwiYXBwX3Nlc3Npb25faGFzaCI6IjYyOTU1M2ZmNDMxMjllZTY2NjBlNzgwZjRkN2QyY2NkZjQ5OTQ2NmY0ZGU4MGM5NjgzMTVhNWU3YWFlZjBiMmYifQ.XncdUBksKgn9cM_KABdT7Wa36AzRrzXGD_lHCfYCJmbUcKWyDjjYstkf5Thf7OPOBWf66mYnvabXn7oxyI1Ae6Nxplgyq7mOMO2FuNF7zXrNbVOKSQR6hIAqaRSsKrDskWkQdFMyGwySeqPWi6b4igW2hvgZxWXl3I6_4vck6EozMbdaX3YoDfDrD59hNzbFFek1H6nCFvQBSogehJf1ro6ZvmSeMmLAPxsSKKU81BMD2QDQZkoZ70CwzC-4Ju4GMXNU6DLAy4U6ixb_1Ndw3k2AsSNb2jnjdSVp_fyBod28HNnF_gBWJJmBkgtZXWXRTTwwIES5MopFMLrfWhrxXw&redirect_url=%2F' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -b 'CF_Authorization=eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg0NTllYWFmNjJmN2RlNjk1OWE1ZjZmMTNiODlmNGVjNWQyYTA3Mzc4MWRlNTc0OGE1MGJlOTBmYTJmYWQ3YmQifQ.eyJhdWQiOlsiOGEzNmQwNmExMWFkMWY2MTI2NmE4NTQxYzdlZGNhYTM0ZmYwZTZlYTdhNzdlYjRlNDE4MmFlZDY4Y2MzZjBiNSJdLCJlbWFpbCI6InJicmV0dGhhcnZleUBnbWFpbC5jb20iLCJhY2NvdW50X2lkIjoiMjhlOThmYTdiZmQzYWIxODJjZTQ4ZDQ5NDRjNTQwMGQiLCJleHAiOjE3Njk0NzA0NTAsImlhdCI6MTc2Njg0MjQ1MCwibmJmIjoxNzY2ODQyNDUwLCJpc3MiOiJodHRwczovL3JiaGFydmV5LmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwic3ViIjoiZWQ2MzFkZDAtNWFiNS01MmNhLThiMmItZjBiMWRmZTQ4NWI0IiwiaWRlbnRpdHkiOnsiZW1haWwiOiJyYnJldHRoYXJ2ZXlAZ21haWwuY29tIiwiaWRwIjp7ImlkIjoiM2IyNTQ5NjQtMGQzOS00OWZlLTljMDEtMjQ1NzBhOWQ5ODE3IiwidHlwZSI6Im9uZXRpbWVwaW4ifSwiZ2VvIjp7ImNvdW50cnkiOiJVUyJ9LCJ1c2VyX3V1aWQiOiJlZDYzMWRkMC01YWI1LTUyY2EtOGIyYi1mMGIxZGZlNDg1YjQiLCJhY2NvdW50X2lkIjoiMjhlOThmYTdiZmQzYWIxODJjZTQ4ZDQ5NDRjNTQwMGQiLCJpYXQiOjE3NjY4NDI0NTAsImlwIjoiMjYwMDo0MDQwOjkzYjk6MWQwMDo3MDRkOmI1YzQ6ZmU3Zjo5MWRlIiwiYXV0aF9zdGF0dXMiOiJOT05FIiwiY29tbW9uX25hbWUiOiIiLCJzZXJ2aWNlX3Rva2VuX2lkIjoiIiwic2VydmljZV90b2tlbl9zdGF0dXMiOmZhbHNlLCJpc193YXJwIjpmYWxzZSwiaXNfZ2F0ZXdheSI6ZmFsc2UsImRldmljZV9pZCI6IiIsIm10bHNfYXV0aCI6eyJjZXJ0X2lzc3Vlcl9kbiI6IiIsImNlcnRfc2VyaWFsIjoiIiwiY2VydF9pc3N1ZXJfc2tpIjoiIiwiY2VydF9wcmVzZW50ZWQiOnRydWUsImNvbW1vbl9uYW1lIjoiIiwiYXV0aF9zdGF0dXMiOiJOT05FIn0sInZlcnNpb24iOjJ9LCJ0eXBlIjoib3JnIiwiaWRlbnRpdHlfbm9uY2UiOiJxZkN1NzI3UTNOaUlVcERxIn0.fYbz6WjjT7GPOEXvifWmUxpoxQjDukZamEiLrIIBFxqjbrb1r738tcXF6te5XWnXVLb85KZNvhlgyj4WeA5bQlGp_kjsLcMCwKuEGFOA8J1XnZU93ptEl9PUIH_QVk60Vqa3ZIqH54Smhw3l5EPvSxh1I2izbe8q4M5bzSmd6eUDH2cfBfQogQipx0HO14KLjtQ3vfwDh7rmEI-nALDmZdXrQH0eLZVwQIEOELPD5AOVZ9_1SCAcFWn05tQO4u1uvoswVbORSwhvBBLAUF1qhjBWnv48p7MAFQ6YuSjeaIcJA0LFVRDva3ToH0uZzKc7y5obIgetBJRSO0iJBK4gMg; CF_Device=eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg0NTllYWFmNjJmN2RlNjk1OWE1ZjZmMTNiODlmNGVjNWQyYTA3Mzc4MWRlNTc0OGE1MGJlOTBmYTJmYWQ3YmQifQ.eyJ0eXBlIjoidHJ1c3RlZF9kZXZpY2UiLCJpc3MiOiJodHRwczovL3JiaGFydmV5LmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwiaWF0IjoxNzY2ODQyNDUxLCJleHAiOjE3Njk0MzQ0NTEsImp0aSI6IjNlaG10bUpxTlN0NFJQM2Q1VDh4TFFvQ0NRcmh6U0hkIiwiZW1haWxzIjpbInJicmV0dGhhcnZleUBnbWFpbC5jb20iXX0.aEHdeIyXnSYzMHTz2W6allPtQ_mCRRWVw1dKwvZ4nlEOiaA9iJb6s0hKc3hN_VtoPKwcFq6bAN873qcRT4wMv26oxpjErubRw0RSV68UamATxKxUD41gN6GbOHsMzkQqz-KvQO154UmSFWgunKYoFNSFso7AicmGhhmQd6aEBivXUWJ69vBvk6EYyqgf5ZhF0o5xle92rQsLiwZW_dewL21O_PxfnTfB3cBDduoEsPhq-dBC8Cq0TeRv1cCI8TcKQKoOc1uKGXcvgusiyGFaSu8nbaIUzUZNTJnPuACigYCVquovP7fi_1yJ9wXR4GGKP8gZC2dNpxOpRN5UfTBQ0g' \
+  -H 'priority: u=0, i' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: none' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' ;
+curl 'https://habits.brettharvey.sh/cdn-cgi/access/authorized?nonce=bd53f64ce93139469378f45336c1aa9be7be7f4aed6511a17bfd6e44b8120439.1766976785&state=b268ece3a9e963d9da7101cdb4229283a5a86dd489a3ba72d22e1e445240d918.JTdCJTIyaWF0JTIyJTNBMTc2Njk3NjcyNCUyQyUyMmF1dGhEb21haW4lMjIlM0ElMjJyYmhhcnZleS5jbG91ZGZsYXJlYWNjZXNzLmNvbSUyMiUyQyUyMmhvc3RuYW1lJTIyJTNBJTIyaGFiaXRzLmJyZXR0aGFydmV5LnNoJTIyJTJDJTIycmVkaXJlY3RVUkwlMjIlM0ElMjIlMkYlMjIlMkMlMjJhdWQlMjIlM0ElMjIxZjlkNWFmN2FjNDExZmM1MjFmMzMzMWQzOWJhYzliZmVhNjkzYTc5OWE1ZThlNzU1ZGVmNTZlMDQwNjNhNGVmJTIyJTJDJTIyaWRwSWQlMjIlM0ElMjIzYjI1NDk2NC0wZDM5LTQ5ZmUtOWMwMS0yNDU3MGE5ZDk4MTclMjIlMkMlMjJpc1NhbWVTaXRlTm9uZUNvbXBhdGlibGUlMjIlM0F0cnVlJTJDJTIyaXNTU08lMjIlM0F0cnVlJTJDJTIybm9uY2UlMjIlM0ElMjJuUFV4OTFYb1lxTUE4TloxViUyMiUyQyUyMmFwcFNlc3Npb25IYXNoJTIyJTNBJTIyNjI5NTUzZmY0MzEyOWVlNjY2MGU3ODBmNGQ3ZDJjY2RmNDk5NDY2ZjRkZTgwYzk2ODMxNWE1ZTdhYWVmMGIyZiUyMiUyQyUyMmlzX3dhcnAlMjIlM0FmYWxzZSU3RA%3D%3D' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -b 'CF_AppSession=c6fee8b7b6d713f6' \
+  -H 'priority: u=0, i' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: none' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' ;
+curl 'https://habits.brettharvey.sh/' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -b 'CF_AppSession=c6fee8b7b6d713f6; CF_Authorization=eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg0NTllYWFmNjJmN2RlNjk1OWE1ZjZmMTNiODlmNGVjNWQyYTA3Mzc4MWRlNTc0OGE1MGJlOTBmYTJmYWQ3YmQifQ.eyJhdWQiOlsiMWY5ZDVhZjdhYzQxMWZjNTIxZjMzMzFkMzliYWM5YmZlYTY5M2E3OTlhNWU4ZTc1NWRlZjU2ZTA0MDYzYTRlZiJdLCJlbWFpbCI6InJicmV0dGhhcnZleUBnbWFpbC5jb20iLCJleHAiOjE3NjcwNjMxMjMsImlhdCI6MTc2Njk3NjcyMywibmJmIjoxNzY2OTc2NzIzLCJpc3MiOiJodHRwczovL3JiaGFydmV5LmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwidHlwZSI6ImFwcCIsImlkZW50aXR5X25vbmNlIjoicWZDdTcyN1EzTmlJVXBEcSIsInN1YiI6ImVkNjMxZGQwLTVhYjUtNTJjYS04YjJiLWYwYjFkZmU0ODViNCIsImNvdW50cnkiOiJVUyJ9.d-Fc08QIweIakkJqnyxNzSY8aU2h7Wyxk9mjykTBgr7NualElj_OuyMHIws9Pp9UjAQlcvvSZ_uqJhRcjoY-w5vduYETJid0fQZOX9LGI1HA3Q_jFNWbScRLCb3d3S6sX9VwalP4yj1_G2iSW1r6NeXkcjdJDyoZNvbq2VZBzcasXPGM5yg-wrlBxOKfo01lqv3x216cGxLxl4gUTPDDID4a1GrFdcKJCVuDJ6I1wDi9pEjRMW56q-DX73WAQRUe1fjHyWji-0Ku3taY2hU2fuG88zw6yvox7W00Hg2s8ncRnsaVRdYZSx32Ug2VSz4ciwkXVCbP2Q4FW6sgXiE35Q' \
+  -H 'priority: u=0, i' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: none' \
+  -H 'sec-fetch-user: ?1' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' ;
+curl 'https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://habits.brettharvey.sh/' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' ;
+curl 'https://unpkg.com/htmx.org@2.0.4' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Referer: https://habits.brettharvey.sh/' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' ;
+curl 'https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'if-modified-since: Thu, 06 Jun 2024 15:52:56 GMT' \
+  -H 'if-none-match: W/"2024.6.1"' \
+  -H 'origin: https://habits.brettharvey.sh' \
+  -H 'referer: https://habits.brettharvey.sh/' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: script' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' ;
+curl 'https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  -H 'Referer: https://habits.brettharvey.sh/' ;
+curl 'chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/inline/injected.js' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  -H 'Origin: https://habits.brettharvey.sh' \
+  -H 'Referer;' ;
+curl 'https://habits.brettharvey.sh/cdn-cgi/rum?' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json' \
+  -b 'CF_AppSession=c6fee8b7b6d713f6; CF_Authorization=eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg0NTllYWFmNjJmN2RlNjk1OWE1ZjZmMTNiODlmNGVjNWQyYTA3Mzc4MWRlNTc0OGE1MGJlOTBmYTJmYWQ3YmQifQ.eyJhdWQiOlsiMWY5ZDVhZjdhYzQxMWZjNTIxZjMzMzFkMzliYWM5YmZlYTY5M2E3OTlhNWU4ZTc1NWRlZjU2ZTA0MDYzYTRlZiJdLCJlbWFpbCI6InJicmV0dGhhcnZleUBnbWFpbC5jb20iLCJleHAiOjE3NjcwNjMxMjMsImlhdCI6MTc2Njk3NjcyMywibmJmIjoxNzY2OTc2NzIzLCJpc3MiOiJodHRwczovL3JiaGFydmV5LmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwidHlwZSI6ImFwcCIsImlkZW50aXR5X25vbmNlIjoicWZDdTcyN1EzTmlJVXBEcSIsInN1YiI6ImVkNjMxZGQwLTVhYjUtNTJjYS04YjJiLWYwYjFkZmU0ODViNCIsImNvdW50cnkiOiJVUyJ9.d-Fc08QIweIakkJqnyxNzSY8aU2h7Wyxk9mjykTBgr7NualElj_OuyMHIws9Pp9UjAQlcvvSZ_uqJhRcjoY-w5vduYETJid0fQZOX9LGI1HA3Q_jFNWbScRLCb3d3S6sX9VwalP4yj1_G2iSW1r6NeXkcjdJDyoZNvbq2VZBzcasXPGM5yg-wrlBxOKfo01lqv3x216cGxLxl4gUTPDDID4a1GrFdcKJCVuDJ6I1wDi9pEjRMW56q-DX73WAQRUe1fjHyWji-0Ku3taY2hU2fuG88zw6yvox7W00Hg2s8ncRnsaVRdYZSx32Ug2VSz4ciwkXVCbP2Q4FW6sgXiE35Q' \
+  -H 'origin: https://habits.brettharvey.sh' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://habits.brettharvey.sh/' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  --data-raw '{"memory":{"totalJSHeapSize":4156403,"usedJSHeapSize":3218371,"jsHeapSizeLimit":4294967296},"resources":[],"referrer":"","eventType":1,"firstPaint":0,"firstContentfulPaint":0,"startTime":1766976723094.1,"versions":{"fl":"2024.11.0","js":"2024.6.1","timings":2},"pageloadId":"c0d58fcc-fb39-417b-83b5-a59552a3e148","location":"https://habits.brettharvey.sh/","nt":"navigate","timingsV2":{"unloadEventStart":0,"unloadEventEnd":0,"domInteractive":2192.5999999046326,"domContentLoadedEventStart":2226.5,"domContentLoadedEventEnd":2228.0999999046326,"domComplete":2229.2999999523163,"loadEventStart":2229.2999999523163,"loadEventEnd":2229.2999999523163,"type":"navigate","redirectCount":0,"criticalCHRestart":0,"activationStart":0,"initiatorType":"navigation","nextHopProtocol":"h3","deliveryType":"","workerStart":0,"redirectStart":0,"redirectEnd":0,"fetchStart":1563.9000000953674,"domainLookupStart":1563.9000000953674,"domainLookupEnd":1563.9000000953674,"connectStart":1563.9000000953674,"connectEnd":1563.9000000953674,"secureConnectionStart":1563.9000000953674,"requestStart":1565.5,"responseStart":2155.4000000953674,"responseEnd":2157,"transferSize":1888,"encodedBodySize":1588,"decodedBodySize":3994,"responseStatus":200,"finalResponseHeadersStart":2155.4000000953674,"firstInterimResponseStart":0,"workerRouterEvaluationStart":0,"workerCacheLookupStart":0,"workerMatchedSourceType":"","workerFinalSourceType":"","renderBlockingStatus":"non-blocking","contentEncoding":"zstd","name":"https://habits.brettharvey.sh/","entryType":"navigation","startTime":0,"duration":2229.2999999523163},"dt":"","siteToken":"ca53fe265b504eb795d0d0a30bf1aec7","st":2}' ;
+curl 'https://habits.brettharvey.sh/favicon.ico' \
+  -H 'accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -b 'CF_AppSession=c6fee8b7b6d713f6; CF_Authorization=eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg0NTllYWFmNjJmN2RlNjk1OWE1ZjZmMTNiODlmNGVjNWQyYTA3Mzc4MWRlNTc0OGE1MGJlOTBmYTJmYWQ3YmQifQ.eyJhdWQiOlsiMWY5ZDVhZjdhYzQxMWZjNTIxZjMzMzFkMzliYWM5YmZlYTY5M2E3OTlhNWU4ZTc1NWRlZjU2ZTA0MDYzYTRlZiJdLCJlbWFpbCI6InJicmV0dGhhcnZleUBnbWFpbC5jb20iLCJleHAiOjE3NjcwNjMxMjMsImlhdCI6MTc2Njk3NjcyMywibmJmIjoxNzY2OTc2NzIzLCJpc3MiOiJodHRwczovL3JiaGFydmV5LmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwidHlwZSI6ImFwcCIsImlkZW50aXR5X25vbmNlIjoicWZDdTcyN1EzTmlJVXBEcSIsInN1YiI6ImVkNjMxZGQwLTVhYjUtNTJjYS04YjJiLWYwYjFkZmU0ODViNCIsImNvdW50cnkiOiJVUyJ9.d-Fc08QIweIakkJqnyxNzSY8aU2h7Wyxk9mjykTBgr7NualElj_OuyMHIws9Pp9UjAQlcvvSZ_uqJhRcjoY-w5vduYETJid0fQZOX9LGI1HA3Q_jFNWbScRLCb3d3S6sX9VwalP4yj1_G2iSW1r6NeXkcjdJDyoZNvbq2VZBzcasXPGM5yg-wrlBxOKfo01lqv3x216cGxLxl4gUTPDDID4a1GrFdcKJCVuDJ6I1wDi9pEjRMW56q-DX73WAQRUe1fjHyWji-0Ku3taY2hU2fuG88zw6yvox7W00Hg2s8ncRnsaVRdYZSx32Ug2VSz4ciwkXVCbP2Q4FW6sgXiE35Q' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://habits.brettharvey.sh/' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: image' \
+  -H 'sec-fetch-mode: no-cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' ;
+curl 'https://habits.brettharvey.sh/cdn-cgi/rum?' \
+  -H 'accept: */*' \
+  -H 'accept-language: en-US,en;q=0.9' \
+  -H 'content-type: application/json' \
+  -b 'CF_AppSession=c6fee8b7b6d713f6; CF_Authorization=eyJhbGciOiJSUzI1NiIsImtpZCI6Ijg0NTllYWFmNjJmN2RlNjk1OWE1ZjZmMTNiODlmNGVjNWQyYTA3Mzc4MWRlNTc0OGE1MGJlOTBmYTJmYWQ3YmQifQ.eyJhdWQiOlsiMWY5ZDVhZjdhYzQxMWZjNTIxZjMzMzFkMzliYWM5YmZlYTY5M2E3OTlhNWU4ZTc1NWRlZjU2ZTA0MDYzYTRlZiJdLCJlbWFpbCI6InJicmV0dGhhcnZleUBnbWFpbC5jb20iLCJleHAiOjE3NjcwNjMxMjMsImlhdCI6MTc2Njk3NjcyMywibmJmIjoxNzY2OTc2NzIzLCJpc3MiOiJodHRwczovL3JiaGFydmV5LmNsb3VkZmxhcmVhY2Nlc3MuY29tIiwidHlwZSI6ImFwcCIsImlkZW50aXR5X25vbmNlIjoicWZDdTcyN1EzTmlJVXBEcSIsInN1YiI6ImVkNjMxZGQwLTVhYjUtNTJjYS04YjJiLWYwYjFkZmU0ODViNCIsImNvdW50cnkiOiJVUyJ9.d-Fc08QIweIakkJqnyxNzSY8aU2h7Wyxk9mjykTBgr7NualElj_OuyMHIws9Pp9UjAQlcvvSZ_uqJhRcjoY-w5vduYETJid0fQZOX9LGI1HA3Q_jFNWbScRLCb3d3S6sX9VwalP4yj1_G2iSW1r6NeXkcjdJDyoZNvbq2VZBzcasXPGM5yg-wrlBxOKfo01lqv3x216cGxLxl4gUTPDDID4a1GrFdcKJCVuDJ6I1wDi9pEjRMW56q-DX73WAQRUe1fjHyWji-0Ku3taY2hU2fuG88zw6yvox7W00Hg2s8ncRnsaVRdYZSx32Ug2VSz4ciwkXVCbP2Q4FW6sgXiE35Q' \
+  -H 'origin: https://habits.brettharvey.sh' \
+  -H 'priority: u=4, i' \
+  -H 'referer: https://habits.brettharvey.sh/' \
+  -H 'sec-ch-ua: "Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36' \
+  --data-raw '{"referrer":"","eventType":3,"versions":{"js":"2024.6.1","fl":"2024.11.0"},"pageloadId":"c0d58fcc-fb39-417b-83b5-a59552a3e148","location":"https://habits.brettharvey.sh/","landingPath":"/","startTime":1766976723094.1,"nt":"navigate","siteToken":"ca53fe265b504eb795d0d0a30bf1aec7","lcp":{"value":2244,"path":"/","element":"html>body>main.container>nav.date-nav>h2","size":6897,"rld":0,"rlt":0,"erd":88.59999990463257,"fp":null},"fid":{"value":-1},"cls":{"value":0,"path":"/"},"fcp":{"value":2244,"path":"/"},"ttfb":{"value":2155.4000000953674,"path":"/"},"inp":{"value":-1},"timingsV2":{"nextHopProtocol":"h3","transferSize":1888,"decodedBodySize":3994},"dt":"","st":1}'

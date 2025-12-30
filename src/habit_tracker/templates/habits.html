@@ -18,12 +18,12 @@
     <label>
         ID (unique, no spaces)
         <input type="text" name="id" required pattern="[a-z0-9_-]+"
-               placeholder="e.g., morning_workout">
+               placeholder="e.g., morning_workout" data-1p-ignore>
     </label>
 
     <label>
         Name
-        <input type="text" name="name" required placeholder="e.g., Did you work out?">
+        <input type="text" name="name" required placeholder="e.g., Did you work out?" data-1p-ignore>
     </label>
 
     <label>
@@ -40,15 +40,15 @@
 
     <div id="options-field" style="display: none;">
         <label>
-            Options (comma-separated)
-            <input type="text" name="options" placeholder="e.g., great, good, okay, bad">
+            Options (comma-separated, max 9)
+            <input type="text" name="options" placeholder="e.g., great, good, okay, bad" data-1p-ignore>
         </label>
     </div>
 
     <div id="unit-field" style="display: none;">
         <label>
             Unit (optional)
-            <input type="text" name="unit" placeholder="e.g., glasses, pages">
+            <input type="text" name="unit" placeholder="e.g., glasses, pages" data-1p-ignore>
         </label>
     </div>
 
