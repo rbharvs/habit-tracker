@@ -47,3 +47,23 @@ class JsonFileStorage:
     def save_entries(self, entries: DailyEntries) -> None:
         path = self.entries_dir / f"{entries.date.isoformat()}.json"
         path.write_text(json.dumps(entries.model_dump(), indent=2, default=str))
+
+    def count_entries_for_habit(self, habit_id: str) -> int:
+        """Count how many daily entry files contain an entry for this habit."""
+        count = 0
+        for file in self.entries_dir.glob("*.json"):
+            data = json.loads(file.read_text())
+            if habit_id in data.get("entries", {}):
+                count += 1
+        return count
+
+    def delete_entries_for_habit(self, habit_id: str) -> int:
+        """Delete entries for a habit from all daily files. Returns count deleted."""
+        count = 0
+        for file in self.entries_dir.glob("*.json"):
+            data = json.loads(file.read_text())
+            if habit_id in data.get("entries", {}):
+                del data["entries"][habit_id]
+                file.write_text(json.dumps(data, indent=2, default=str))
+                count += 1
+        return count

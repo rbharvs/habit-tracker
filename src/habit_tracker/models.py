@@ -19,6 +19,7 @@ class BinaryHabit(BaseModel):
     type: Literal["binary"] = "binary"
     id: HabitId
     name: HabitName
+    archived: bool = False
 
 
 class SingleSelectHabit(BaseModel):
@@ -28,6 +29,7 @@ class SingleSelectHabit(BaseModel):
     id: HabitId
     name: HabitName
     options: NonEmptyOptions
+    archived: bool = False
 
 
 class JournalHabit(BaseModel):
@@ -36,6 +38,7 @@ class JournalHabit(BaseModel):
     type: Literal["journal"] = "journal"
     id: HabitId
     name: HabitName
+    archived: bool = False
 
 
 class NumericHabit(BaseModel):
@@ -45,6 +48,7 @@ class NumericHabit(BaseModel):
     id: HabitId
     name: HabitName
     unit: str = ""  # e.g., "glasses", "pages"
+    archived: bool = False
 
 
 class TimeHabit(BaseModel):
@@ -53,6 +57,7 @@ class TimeHabit(BaseModel):
     type: Literal["time"] = "time"
     id: HabitId
     name: HabitName
+    archived: bool = False
 
 
 class MultiSelectHabit(BaseModel):
@@ -62,6 +67,7 @@ class MultiSelectHabit(BaseModel):
     id: HabitId
     name: HabitName
     options: NonEmptyOptions
+    archived: bool = False
 
 
 # Discriminated union: Pydantic uses "type" field to determine which model

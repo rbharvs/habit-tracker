@@ -110,3 +110,34 @@ class DynamoDBStorage:
                 ),
             }
         )
+
+    def count_entries_for_habit(self, habit_id: str) -> int:
+        """Count entries containing this habit across all dates."""
+        response = self._table.query(
+            KeyConditionExpression=Key("pk").eq(self._user_pk())
+            & Key("sk").begins_with("ENTRY#")
+        )
+        count = 0
+        for item in response.get("Items", []):
+            if habit_id in item.get("entries", {}):
+                count += 1
+        return count
+
+    def delete_entries_for_habit(self, habit_id: str) -> int:
+        """Delete entries for a habit from all dates. Returns count deleted."""
+        response = self._table.query(
+            KeyConditionExpression=Key("pk").eq(self._user_pk())
+            & Key("sk").begins_with("ENTRY#")
+        )
+        count = 0
+        for item in response.get("Items", []):
+            if habit_id in item.get("entries", {}):
+                entries = item.get("entries", {})
+                del entries[habit_id]
+                self._table.update_item(
+                    Key={"pk": item["pk"], "sk": item["sk"]},
+                    UpdateExpression="SET entries = :e",
+                    ExpressionAttributeValues={":e": entries},
+                )
+                count += 1
+        return count

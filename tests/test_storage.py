@@ -105,3 +105,89 @@ def test_entries_dir_path(tmp_path: Path):
     """entries_dir property returns correct path."""
     storage = JsonFileStorage(data_dir=tmp_path / "data")
     assert storage.entries_dir == tmp_path / "data" / "entries"
+
+
+def test_count_entries_for_habit(tmp_path: Path):
+    """count_entries_for_habit counts daily files containing habit."""
+    from habit_tracker.models import BinaryEntry, DailyEntries
+
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+
+    # Create entries for 3 different days with the habit
+    for day_offset in range(3):
+        daily = DailyEntries(
+            date=date(2025, 1, 5 + day_offset),
+            entries={"workout": BinaryEntry(value=True)},
+        )
+        storage.save_entries(daily)
+
+    # Create 1 entry without the habit
+    daily = DailyEntries(
+        date=date(2025, 1, 10),
+        entries={"other_habit": BinaryEntry(value=True)},
+    )
+    storage.save_entries(daily)
+
+    count = storage.count_entries_for_habit("workout")
+    assert count == 3
+
+
+def test_count_entries_for_habit_empty(tmp_path: Path):
+    """count_entries_for_habit returns 0 for nonexistent habit."""
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+
+    count = storage.count_entries_for_habit("nonexistent")
+    assert count == 0
+
+
+def test_delete_entries_for_habit(tmp_path: Path):
+    """delete_entries_for_habit removes habit from all daily files."""
+    from habit_tracker.models import BinaryEntry, DailyEntries
+
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+
+    # Create entries with multiple habits
+    for day_offset in range(3):
+        daily = DailyEntries(
+            date=date(2025, 1, 5 + day_offset),
+            entries={
+                "workout": BinaryEntry(value=True),
+                "meditation": BinaryEntry(value=True),
+            },
+        )
+        storage.save_entries(daily)
+
+    # Delete the workout habit entries
+    storage.delete_entries_for_habit("workout")
+
+    # Verify workout is gone but meditation remains
+    for day_offset in range(3):
+        loaded = storage.load_entries(date(2025, 1, 5 + day_offset))
+        assert loaded is not None
+        assert "workout" not in loaded.entries
+        assert "meditation" in loaded.entries
+
+
+def test_delete_entries_for_habit_returns_count(tmp_path: Path):
+    """delete_entries_for_habit returns number of files modified."""
+    from habit_tracker.models import BinaryEntry, DailyEntries
+
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+
+    # Create entries for 3 days
+    for day_offset in range(3):
+        daily = DailyEntries(
+            date=date(2025, 1, 5 + day_offset),
+            entries={"workout": BinaryEntry(value=True)},
+        )
+        storage.save_entries(daily)
+
+    # Create 1 entry without the habit
+    daily = DailyEntries(
+        date=date(2025, 1, 10),
+        entries={"other_habit": BinaryEntry(value=True)},
+    )
+    storage.save_entries(daily)
+
+    deleted_count = storage.delete_entries_for_habit("workout")
+    assert deleted_count == 3
