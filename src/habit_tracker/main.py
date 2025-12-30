@@ -1,6 +1,6 @@
 """FastAPI app with routes for viewing/editing daily entries."""
 
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from pathlib import Path
 from typing import Annotated, assert_never
 
@@ -15,8 +15,14 @@ from .models import (
     DailyEntries,
     JournalEntry,
     JournalHabit,
+    MultiSelectEntry,
+    MultiSelectHabit,
+    NumericEntry,
+    NumericHabit,
     SingleSelectEntry,
     SingleSelectHabit,
+    TimeEntry,
+    TimeHabit,
 )
 from .storage import Storage
 
@@ -59,7 +65,15 @@ def save(request: Request, storage: Storage, form: FormDataDep) -> Response:
     day = date.fromisoformat(str(form["date"]))
     habits = storage.load_habits()
 
-    entries: dict[str, BinaryEntry | SingleSelectEntry | JournalEntry] = {}
+    entries: dict[
+        str,
+        BinaryEntry
+        | SingleSelectEntry
+        | JournalEntry
+        | NumericEntry
+        | TimeEntry
+        | MultiSelectEntry,
+    ] = {}
     for habit in habits:
         field_name = f"habit_{habit.id}"
         # Exhaustive pattern matching with assert_never
@@ -71,6 +85,20 @@ def save(request: Request, storage: Storage, form: FormDataDep) -> Response:
                     entries[habit.id] = SingleSelectEntry(value=str(form[field_name]))
             case JournalHabit():
                 entries[habit.id] = JournalEntry(value=str(form.get(field_name, "")))
+            case NumericHabit():
+                if field_name in form:
+                    raw = str(form[field_name]).strip()
+                    if raw:
+                        entries[habit.id] = NumericEntry(value=int(raw))
+            case TimeHabit():
+                if field_name in form:
+                    raw = str(form[field_name]).strip()
+                    if raw:
+                        entries[habit.id] = TimeEntry(value=time.fromisoformat(raw))
+            case MultiSelectHabit():
+                # Multiple checkboxes with same name come as getlist
+                selected = form.getlist(field_name)
+                entries[habit.id] = MultiSelectEntry(value=[str(v) for v in selected])
             case _ as unreachable:
                 assert_never(unreachable)
 

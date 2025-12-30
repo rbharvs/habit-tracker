@@ -40,6 +40,31 @@
 
         {% elif habit.type == "journal" %}
         <textarea name="habit_{{ habit.id }}" rows="3">{{ entries.get(habit.id).value if entries.get(habit.id) else '' }}</textarea>
+
+        {% elif habit.type == "numeric" %}
+        <div class="numeric-input">
+            <input type="number" name="habit_{{ habit.id }}"
+                   value="{{ entries.get(habit.id).value if entries.get(habit.id) else '' }}"
+                   min="0" step="1" inputmode="numeric">
+            {% if habit.unit %}<span class="unit">{{ habit.unit }}</span>{% endif %}
+        </div>
+
+        {% elif habit.type == "time" %}
+        <input type="time" name="habit_{{ habit.id }}"
+               value="{{ entries.get(habit.id).value.strftime('%H:%M') if entries.get(habit.id) else '' }}">
+
+        {% elif habit.type == "multi_select" %}
+        <fieldset>
+            <div class="options">
+            {% for option in habit.options %}
+            <label>
+                <input type="checkbox" name="habit_{{ habit.id }}" value="{{ option }}"
+                       {% if entries.get(habit.id) and option in entries[habit.id].value %}checked{% endif %}>
+                {{ option }}
+            </label>
+            {% endfor %}
+            </div>
+        </fieldset>
         {% endif %}
     </div>
     {% endfor %}

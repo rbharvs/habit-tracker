@@ -106,7 +106,7 @@ class DynamoDBStorage:
                 "sk": f"ENTRY#{entries.date.isoformat()}",
                 "date": entries.date.isoformat(),
                 "entries": _to_dynamodb(
-                    {k: v.model_dump() for k, v in entries.entries.items()}
+                    {k: v.model_dump(mode="json") for k, v in entries.entries.items()}
                 ),
             }
         )

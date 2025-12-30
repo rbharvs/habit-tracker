@@ -1,6 +1,6 @@
 """Tests for FastAPI routes (main.py)."""
 
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 
 from fastapi.testclient import TestClient
 
@@ -10,7 +10,10 @@ from habit_tracker.models import (
     BinaryHabit,
     DailyEntries,
     JournalHabit,
+    MultiSelectHabit,
+    NumericHabit,
     SingleSelectHabit,
+    TimeHabit,
 )
 
 
@@ -247,3 +250,162 @@ def test_template_uses_relative_urls(test_storage):
     # HTMX post should be relative
     assert 'hx-post="save"' in response.text, "HTMX post must be relative 'save'"
     assert 'hx-post="/save"' not in response.text, "HTMX post must not be absolute"
+
+
+# =============================================================================
+# NumericHabit Route Tests
+# =============================================================================
+
+
+def test_save_numeric(test_storage):
+    """POST /save with number creates numeric entry."""
+    test_storage.save_habits([NumericHabit(id="water", name="Water", unit="glasses")])
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_water": "8"},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert entries.entries["water"].value == 8
+
+
+def test_save_numeric_empty(test_storage):
+    """POST /save with empty numeric field creates no entry."""
+    test_storage.save_habits([NumericHabit(id="water", name="Water")])
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_water": ""},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert "water" not in entries.entries
+
+
+def test_index_shows_numeric_habit(test_storage):
+    """GET / shows numeric input with unit."""
+    test_storage.save_habits(
+        [NumericHabit(id="water", name="Glasses of water", unit="glasses")]
+    )
+
+    client = TestClient(app)
+    response = client.get("/")
+    assert 'type="number"' in response.text
+    assert 'name="habit_water"' in response.text
+    assert "glasses" in response.text
+
+
+# =============================================================================
+# TimeHabit Route Tests
+# =============================================================================
+
+
+def test_save_time(test_storage):
+    """POST /save with time creates time entry."""
+    test_storage.save_habits([TimeHabit(id="bedtime", name="Bedtime")])
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_bedtime": "22:30"},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert entries.entries["bedtime"].value == time(22, 30)
+
+
+def test_save_time_empty(test_storage):
+    """POST /save with empty time field creates no entry."""
+    test_storage.save_habits([TimeHabit(id="bedtime", name="Bedtime")])
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_bedtime": ""},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert "bedtime" not in entries.entries
+
+
+def test_index_shows_time_habit(test_storage):
+    """GET / shows time input."""
+    test_storage.save_habits([TimeHabit(id="bedtime", name="Bedtime")])
+
+    client = TestClient(app)
+    response = client.get("/")
+    assert 'type="time"' in response.text
+    assert 'name="habit_bedtime"' in response.text
+
+
+# =============================================================================
+# MultiSelectHabit Route Tests
+# =============================================================================
+
+
+def test_save_multi_select(test_storage):
+    """POST /save with multiple checkboxes creates multi-select entry."""
+    test_storage.save_habits(
+        [
+            MultiSelectHabit(
+                id="exercises",
+                name="Exercises",
+                options=["cardio", "strength", "flexibility"],
+            )
+        ]
+    )
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_exercises": ["cardio", "strength"]},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert set(entries.entries["exercises"].value) == {"cardio", "strength"}
+
+
+def test_save_multi_select_empty(test_storage):
+    """POST /save with no checkboxes creates empty multi-select entry."""
+    test_storage.save_habits(
+        [
+            MultiSelectHabit(
+                id="exercises", name="Exercises", options=["cardio", "strength"]
+            )
+        ]
+    )
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05"},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert entries.entries["exercises"].value == []
+
+
+def test_index_shows_multi_select_habit(test_storage):
+    """GET / shows checkboxes for multi-select options."""
+    test_storage.save_habits(
+        [
+            MultiSelectHabit(
+                id="exercises", name="Exercises", options=["cardio", "strength"]
+            )
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.get("/")
+    assert 'type="checkbox"' in response.text
+    assert 'value="cardio"' in response.text
+    assert 'value="strength"' in response.text

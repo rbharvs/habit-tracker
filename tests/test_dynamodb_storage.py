@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, time
 
 import boto3
 import pytest
@@ -9,7 +9,10 @@ from habit_tracker.models import (
     BinaryEntry,
     BinaryHabit,
     DailyEntries,
+    MultiSelectEntry,
+    NumericEntry,
     SingleSelectHabit,
+    TimeEntry,
 )
 from habit_tracker.storage.dynamodb_storage import DynamoDBStorage
 
@@ -76,3 +79,45 @@ def test_save_and_load_entries(dynamodb_storage):
     assert loaded is not None
     assert loaded.date == day
     assert loaded.entries["workout"].value is True
+
+
+def test_save_and_load_numeric_entry(dynamodb_storage):
+    """NumericEntry roundtrips through DynamoDB correctly."""
+    day = date(2025, 1, 5)
+    entries = DailyEntries(
+        date=day,
+        entries={"water": NumericEntry(value=8)},
+    )
+    dynamodb_storage.save_entries(entries)
+    loaded = dynamodb_storage.load_entries(day)
+
+    assert loaded is not None
+    assert loaded.entries["water"].value == 8
+
+
+def test_save_and_load_time_entry(dynamodb_storage):
+    """TimeEntry roundtrips through DynamoDB correctly."""
+    day = date(2025, 1, 5)
+    entries = DailyEntries(
+        date=day,
+        entries={"bedtime": TimeEntry(value=time(22, 30))},
+    )
+    dynamodb_storage.save_entries(entries)
+    loaded = dynamodb_storage.load_entries(day)
+
+    assert loaded is not None
+    assert loaded.entries["bedtime"].value == time(22, 30)
+
+
+def test_save_and_load_multi_select_entry(dynamodb_storage):
+    """MultiSelectEntry roundtrips through DynamoDB correctly."""
+    day = date(2025, 1, 5)
+    entries = DailyEntries(
+        date=day,
+        entries={"exercises": MultiSelectEntry(value=["cardio", "strength"])},
+    )
+    dynamodb_storage.save_entries(entries)
+    loaded = dynamodb_storage.load_entries(day)
+
+    assert loaded is not None
+    assert loaded.entries["exercises"].value == ["cardio", "strength"]
