@@ -326,15 +326,15 @@ def index(request: Request, storage: Storage, day: str | None = None) -> HTMLRes
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] Tests pass: `make test`
-- [ ] Type check passes: `make fix`
+- [x] Tests pass: `make test`
+- [x] Type check passes: `make fix`
 
 #### Manual Verification:
-- [ ] `GET /habits` returns habit list page
-- [ ] `POST /habits` creates new habit and redirects
-- [ ] `DELETE /habits/{id}` archives habit
-- [ ] `DELETE /habits/{id}?hard=true` removes habit and entries
-- [ ] Archived habits don't appear on daily entry page
+- [x] `GET /habits` returns habit list page
+- [x] `POST /habits` creates new habit and redirects
+- [x] `DELETE /habits/{id}` archives habit
+- [x] `DELETE /habits/{id}?hard=true` removes habit and entries
+- [x] Archived habits don't appear on daily entry page
 
 ### New Tests to Write
 

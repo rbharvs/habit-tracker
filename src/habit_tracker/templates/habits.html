@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav class="date-nav">
+    <a href="./">&larr; Back to Today</a>
+    <h2>Manage Habits</h2>
+    <span></span>
+</nav>
+
+<section id="habit-list">
+    {% include "partials/habit_list.html" %}
+</section>
+
+<hr>
+
+<h3>Add New Habit</h3>
+<form method="post" action="habits" hx-post="habits" hx-target="#habit-list" hx-swap="innerHTML">
+    <label>
+        ID (unique, no spaces)
+        <input type="text" name="id" required pattern="[a-z0-9_-]+"
+               placeholder="e.g., morning_workout">
+    </label>
+
+    <label>
+        Name
+        <input type="text" name="name" required placeholder="e.g., Did you work out?">
+    </label>
+
+    <label>
+        Type
+        <select name="type" id="habit-type" onchange="toggleOptions()">
+            <option value="binary">Binary (Yes/No)</option>
+            <option value="single_select">Single Select</option>
+            <option value="multi_select">Multi Select</option>
+            <option value="numeric">Numeric</option>
+            <option value="time">Time</option>
+            <option value="journal">Journal</option>
+        </select>
+    </label>
+
+    <div id="options-field" style="display: none;">
+        <label>
+            Options (comma-separated)
+            <input type="text" name="options" placeholder="e.g., great, good, okay, bad">
+        </label>
+    </div>
+
+    <div id="unit-field" style="display: none;">
+        <label>
+            Unit (optional)
+            <input type="text" name="unit" placeholder="e.g., glasses, pages">
+        </label>
+    </div>
+
+    <button type="submit">Create Habit</button>
+</form>
+
+<script>
+function toggleOptions() {
+    const type = document.getElementById('habit-type').value;
+    const optionsField = document.getElementById('options-field');
+    const unitField = document.getElementById('unit-field');
+
+    optionsField.style.display = ['single_select', 'multi_select'].includes(type) ? 'block' : 'none';
+    unitField.style.display = type === 'numeric' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

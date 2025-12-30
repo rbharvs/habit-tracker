@@ -43,6 +43,7 @@ def index(request: Request, storage: Storage, day: str | None = None) -> HTMLRes
     """Show habit entry form for a day (defaults to today)."""
     target_date = date.fromisoformat(day) if day else date.today()
     habits = storage.load_habits()
+    active_habits = [h for h in habits if not h.archived]
     entries = storage.load_entries(target_date)
 
     return templates.TemplateResponse(
@@ -50,7 +51,7 @@ def index(request: Request, storage: Storage, day: str | None = None) -> HTMLRes
         "index.html",
         {
             "date": target_date,
-            "habits": habits,
+            "habits": active_habits,
             "entries": entries.entries if entries else {},
             "prev_date": (target_date - timedelta(days=1)).isoformat(),
             "next_date": (target_date + timedelta(days=1)).isoformat(),
@@ -114,3 +115,102 @@ def save(request: Request, storage: Storage, form: FormDataDep) -> Response:
         return HTMLResponse(html)
 
     return RedirectResponse(url=f"./?day={day.isoformat()}", status_code=303)
+
+
+@app.get("/habits", response_class=HTMLResponse)
+def list_habits(request: Request, storage: Storage) -> HTMLResponse:
+    """Show habit management page."""
+    habits = storage.load_habits()
+    return templates.TemplateResponse(
+        request,
+        "habits.html",
+        {"habits": habits},
+    )
+
+
+@app.post("/habits", response_model=None)
+def create_habit(request: Request, storage: Storage, form: FormDataDep) -> Response:
+    """Create a new habit."""
+    habit_type = str(form["type"])
+    habit_id = str(form["id"])
+    habit_name = str(form["name"])
+
+    # Build habit based on type
+    match habit_type:
+        case "binary":
+            new_habit = BinaryHabit(id=habit_id, name=habit_name)
+        case "single_select":
+            options = [
+                str(o).strip() for o in str(form["options"]).split(",") if o.strip()
+            ]
+            new_habit = SingleSelectHabit(id=habit_id, name=habit_name, options=options)
+        case "journal":
+            new_habit = JournalHabit(id=habit_id, name=habit_name)
+        case "numeric":
+            unit = str(form.get("unit", ""))
+            new_habit = NumericHabit(id=habit_id, name=habit_name, unit=unit)
+        case "time":
+            new_habit = TimeHabit(id=habit_id, name=habit_name)
+        case "multi_select":
+            options = [
+                str(o).strip() for o in str(form["options"]).split(",") if o.strip()
+            ]
+            new_habit = MultiSelectHabit(id=habit_id, name=habit_name, options=options)
+        case _:
+            return HTMLResponse("Invalid habit type", status_code=400)
+
+    habits = storage.load_habits()
+    # Check for duplicate ID
+    if any(h.id == habit_id for h in habits):
+        return HTMLResponse("Habit ID already exists", status_code=400)
+
+    habits.append(new_habit)
+    storage.save_habits(habits)
+
+    if request.headers.get("HX-Request"):
+        return templates.TemplateResponse(
+            request, "partials/habit_list.html", {"habits": habits}
+        )
+
+    return RedirectResponse(url="./habits", status_code=303)
+
+
+@app.delete("/habits/{habit_id}", response_model=None)
+def delete_habit(
+    request: Request,
+    storage: Storage,
+    habit_id: str,
+    hard: bool = False,
+) -> Response:
+    """Delete a habit. Use hard=true to also delete all entries."""
+    habits = storage.load_habits()
+    habit_idx = next((i for i, h in enumerate(habits) if h.id == habit_id), None)
+
+    if habit_idx is None:
+        return HTMLResponse("Habit not found", status_code=404)
+
+    if hard:
+        # Hard delete: remove habit and all entries
+        storage.delete_entries_for_habit(habit_id)
+        habits.pop(habit_idx)
+    else:
+        # Soft delete: mark as archived
+        habit = habits[habit_idx]
+        archived_habit = habit.model_copy(update={"archived": True})
+        habits[habit_idx] = archived_habit
+
+    storage.save_habits(habits)
+
+    if request.headers.get("HX-Request"):
+        return templates.TemplateResponse(
+            request, "partials/habit_list.html", {"habits": habits}
+        )
+
+    return RedirectResponse(url="./habits", status_code=303)
+
+
+@app.get("/habits/{habit_id}/entry-count")
+def get_entry_count(storage: Storage, habit_id: str) -> dict[str, int]:
+    """Get the number of entries for a habit (for delete confirmation)."""
+    count = storage.count_entries_for_habit(habit_id)
+    return {"count": count}

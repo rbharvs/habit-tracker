@@ -409,3 +409,156 @@ def test_index_shows_multi_select_habit(test_storage):
     assert 'type="checkbox"' in response.text
     assert 'value="cardio"' in response.text
     assert 'value="strength"' in response.text
+
+
+# =============================================================================
+# Habit CRUD Route Tests (Phase 2)
+# =============================================================================
+
+
+def test_list_habits_route(test_storage):
+    """GET /habits returns habit list."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Did you work out?")])
+
+    client = TestClient(app)
+    response = client.get("/habits")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "Did you work out?" in response.text
+
+
+def test_create_binary_habit(test_storage):
+    """POST /habits creates binary habit."""
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={"type": "binary", "id": "workout", "name": "Did you work out?"},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    assert "./habits" in response.headers["location"]
+
+    habits = test_storage.load_habits()
+    assert len(habits) == 1
+    assert habits[0].id == "workout"
+    assert habits[0].name == "Did you work out?"
+    assert habits[0].type == "binary"
+
+
+def test_create_single_select_habit(test_storage):
+    """POST /habits creates single select habit with options."""
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={
+            "type": "single_select",
+            "id": "mood",
+            "name": "How are you feeling?",
+            "options": "great, good, okay, bad",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert len(habits) == 1
+    assert habits[0].type == "single_select"
+    assert habits[0].options == ["great", "good", "okay", "bad"]
+
+
+def test_create_habit_duplicate_id_fails(test_storage):
+    """POST /habits with duplicate ID returns 400."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Existing")])
+
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={"type": "binary", "id": "workout", "name": "Duplicate"},
+    )
+    assert response.status_code == 400
+
+
+def test_soft_delete_habit(test_storage):
+    """DELETE /habits/{id} archives habit."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.delete("/habits/workout", follow_redirects=False)
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert len(habits) == 1
+    assert habits[0].archived is True
+
+
+def test_hard_delete_habit(test_storage):
+    """DELETE /habits/{id}?hard=true removes habit and entries."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+    test_storage.save_entries(
+        DailyEntries(
+            date=date(2025, 1, 5), entries={"workout": BinaryEntry(value=True)}
+        )
+    )
+
+    client = TestClient(app)
+    response = client.delete("/habits/workout?hard=true", follow_redirects=False)
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert len(habits) == 0
+
+    # Entries should also be deleted
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert entries is None or "workout" not in entries.entries
+
+
+def test_archived_habits_hidden_from_index(test_storage):
+    """GET / excludes archived habits."""
+    test_storage.save_habits(
+        [
+            BinaryHabit(id="active", name="Active Habit"),
+            BinaryHabit(id="archived", name="Archived Habit", archived=True),
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.get("/")
+    assert "Active Habit" in response.text
+    assert "Archived Habit" not in response.text
+
+
+def test_entry_count_endpoint(test_storage):
+    """GET /habits/{id}/entry-count returns correct count."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+    test_storage.save_entries(
+        DailyEntries(
+            date=date(2025, 1, 5), entries={"workout": BinaryEntry(value=True)}
+        )
+    )
+    test_storage.save_entries(
+        DailyEntries(
+            date=date(2025, 1, 6), entries={"workout": BinaryEntry(value=True)}
+        )
+    )
+
+    client = TestClient(app)
+    response = client.get("/habits/workout/entry-count")
+    assert response.status_code == 200
+    assert response.json() == {"count": 2}
+
+
+def test_delete_nonexistent_habit_returns_404(test_storage):
+    """DELETE /habits/{id} for nonexistent habit returns 404."""
+    client = TestClient(app)
+    response = client.delete("/habits/nonexistent")
+    assert response.status_code == 404
+
+
+def test_create_habit_invalid_type_returns_400(test_storage):
+    """POST /habits with invalid type returns 400."""
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={"type": "invalid_type", "id": "test", "name": "Test"},
+    )
+    assert response.status_code == 400
