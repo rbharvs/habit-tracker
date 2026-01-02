@@ -4,7 +4,7 @@ from datetime import date, time, timedelta
 from pathlib import Path
 from typing import Annotated, assert_never
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from starlette.datastructures import FormData
@@ -206,6 +206,78 @@ def delete_habit(
             request, "partials/habit_list.html", {"habits": habits}
         )
 
+    return RedirectResponse(url="./habits", status_code=303)
+
+
+@app.post("/habits/{habit_id}/move-up")
+def move_habit_up(
+    request: Request,
+    storage: Storage,
+    habit_id: str,
+) -> Response:
+    """Move a habit up in the list (earlier position)."""
+    habits = storage.load_habits()
+
+    # Find habit index
+    habit_idx = next((i for i, h in enumerate(habits) if h.id == habit_id), None)
+    if habit_idx is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    # Can't move up if already at top or habit is archived
+    if habit_idx == 0 or habits[habit_idx].archived:
+        # Return current list unchanged
+        pass
+    else:
+        # Find previous non-archived habit to swap with
+        prev_idx = habit_idx - 1
+        while prev_idx >= 0 and habits[prev_idx].archived:
+            prev_idx -= 1
+
+        if prev_idx >= 0:
+            habits[habit_idx], habits[prev_idx] = habits[prev_idx], habits[habit_idx]
+            storage.save_habits(habits)
+
+    # Return updated list
+    if request.headers.get("HX-Request"):
+        return templates.TemplateResponse(
+            request, "partials/habit_list.html", {"habits": habits}
+        )
+    return RedirectResponse(url="./habits", status_code=303)
+
+
+@app.post("/habits/{habit_id}/move-down")
+def move_habit_down(
+    request: Request,
+    storage: Storage,
+    habit_id: str,
+) -> Response:
+    """Move a habit down in the list (later position)."""
+    habits = storage.load_habits()
+
+    # Find habit index
+    habit_idx = next((i for i, h in enumerate(habits) if h.id == habit_id), None)
+    if habit_idx is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    # Can't move down if already at bottom or habit is archived
+    if habit_idx == len(habits) - 1 or habits[habit_idx].archived:
+        # Return current list unchanged
+        pass
+    else:
+        # Find next non-archived habit to swap with
+        next_idx = habit_idx + 1
+        while next_idx < len(habits) and habits[next_idx].archived:
+            next_idx += 1
+
+        if next_idx < len(habits):
+            habits[habit_idx], habits[next_idx] = habits[next_idx], habits[habit_idx]
+            storage.save_habits(habits)
+
+    # Return updated list
+    if request.headers.get("HX-Request"):
+        return templates.TemplateResponse(
+            request, "partials/habit_list.html", {"habits": habits}
+        )
     return RedirectResponse(url="./habits", status_code=303)
 
 

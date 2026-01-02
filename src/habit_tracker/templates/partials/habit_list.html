@@ -10,6 +10,20 @@
     <div class="habit-actions">
         {% if not habit.archived %}
         <button class="outline secondary"
+                hx-post="habits/{{ habit.id }}/move-up"
+                hx-target="#habit-list"
+                hx-swap="innerHTML"
+                title="Move up">
+            &uarr;
+        </button>
+        <button class="outline secondary"
+                hx-post="habits/{{ habit.id }}/move-down"
+                hx-target="#habit-list"
+                hx-swap="innerHTML"
+                title="Move down">
+            &darr;
+        </button>
+        <button class="outline secondary"
                 hx-delete="habits/{{ habit.id }}"
                 hx-target="#habit-list"
                 hx-swap="innerHTML"

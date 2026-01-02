@@ -4,7 +4,10 @@
 <nav class="date-nav">
     <a href="?day={{ prev_date }}">&larr; Prev</a>
     <h2>{{ date.strftime('%A, %b %d') }}</h2>
-    <a href="?day={{ next_date }}" id="next-link">Next &rarr;</a>
+    <div class="nav-right">
+        <a href="?day={{ next_date }}" id="next-link">Next &rarr;</a>
+        <a href="./habits">Manage Habits</a>
+    </div>
 </nav>
 
 <form method="post" action="save" hx-post="save" hx-target="#save-status" hx-swap="innerHTML">
