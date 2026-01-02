@@ -55,7 +55,7 @@ def index(request: Request, storage: Storage, day: str | None = None) -> HTMLRes
             "entries": entries.entries if entries else {},
             "prev_date": (target_date - timedelta(days=1)).isoformat(),
             "next_date": (target_date + timedelta(days=1)).isoformat(),
-            "is_today": target_date == date.today(),
+            "is_today": False,  # Computed client-side for timezone accuracy
         },
     )
 

@@ -6,6 +6,20 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#1a1a2e">
     <title>Habit Tracker</title>
+    <script>
+    // Redirect to client's "today" if no day parameter specified
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        if (window.location.pathname === '/' && !params.has('day')) {
+            const d = new Date();
+            const today = d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+            params.set('day', today);
+            window.location.replace('?' + params.toString());
+        }
+    })();
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <style>

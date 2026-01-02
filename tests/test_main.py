@@ -141,14 +141,15 @@ def test_date_navigation_links(test_storage):
     assert "day=2025-01-06" in response.text  # next
 
 
-def test_today_hides_next_link(test_storage):
-    """When viewing today, next link is not shown."""
+def test_next_link_rendered_with_js_hiding(test_storage):
+    """Next link is always rendered; hiding is done client-side."""
     client = TestClient(app)
     today = date.today()
     tomorrow = today + timedelta(days=1)
     response = client.get(f"/?day={today.isoformat()}")
-    # Should not show tomorrow's date link
-    assert f"day={tomorrow.isoformat()}" not in response.text
+    # Link is rendered (hidden client-side via JavaScript)
+    assert f"day={tomorrow.isoformat()}" in response.text
+    assert 'id="next-link"' in response.text
 
 
 def test_save_htmx_returns_indicator(test_storage):

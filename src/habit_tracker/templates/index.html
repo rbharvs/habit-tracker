@@ -4,11 +4,7 @@
 <nav class="date-nav">
     <a href="?day={{ prev_date }}">&larr; Prev</a>
     <h2>{{ date.strftime('%A, %b %d') }}</h2>
-    {% if not is_today %}
-    <a href="?day={{ next_date }}">Next &rarr;</a>
-    {% else %}
-    <span></span>
-    {% endif %}
+    <a href="?day={{ next_date }}" id="next-link">Next &rarr;</a>
 </nav>
 
 <form method="post" action="save" hx-post="save" hx-target="#save-status" hx-swap="innerHTML">
@@ -104,6 +100,18 @@
 
 {% block scripts %}
 <script>
+// Hide "Next" link if viewing client's today
+(function() {
+    const viewingDate = new URLSearchParams(window.location.search).get('day');
+    const d = new Date();
+    const today = d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    if (viewingDate === today) {
+        document.getElementById('next-link').style.display = 'none';
+    }
+})();
+
 // Auto-save on change
 document.querySelectorAll('input, textarea').forEach(el => {
     el.addEventListener('change', () => {
