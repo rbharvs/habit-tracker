@@ -562,13 +562,13 @@ class TestHabitCRUDSnapshots:
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes
-- [ ] All new snapshot tests pass
-- [ ] Snapshot files created for HTMX responses
+- [x] `make test` passes
+- [x] All new snapshot tests pass
+- [x] Snapshot files created for HTMX responses
 
 #### Manual Verification:
-- [ ] HTMX partial responses are captured as separate snapshots
-- [ ] Redirects are tested but not snapshotted (behavior verification only)
+- [x] HTMX partial responses are captured as separate snapshots
+- [x] Redirects are tested but not snapshotted (behavior verification only)
 
 ---
 
@@ -819,13 +819,13 @@ class TestHTMXAttributes:
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes
-- [ ] HTMX attribute tests catch intentional breakage
-- [ ] `make fix` passes (no linting errors in helpers)
+- [x] `make test` passes
+- [x] HTMX attribute tests catch intentional breakage
+- [x] `make fix` passes (no linting errors in helpers)
 
 #### Manual Verification:
-- [ ] Temporarily breaking an HTMX attribute causes test failure
-- [ ] Error messages clearly identify which attribute is wrong
+- [x] Temporarily breaking an HTMX attribute causes test failure
+- [x] Error messages clearly identify which attribute is wrong
 
 ---
 

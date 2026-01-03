@@ -8,6 +8,14 @@ intentional changes.
 from datetime import date
 
 import pytest
+from htmx_helpers import (
+    assert_data_attributes,
+    assert_element_count,
+    assert_element_exists,
+    assert_htmx_button,
+    assert_htmx_form,
+    parse_html,
+)
 
 from habit_tracker.models import (
     BinaryEntry,
@@ -299,3 +307,80 @@ class TestHabitCRUDSnapshots:
         )
         assert response.status_code == 200
         assert response.text == snapshot_html
+
+
+# =============================================================================
+# HTMX Attribute Validation Tests
+# =============================================================================
+
+
+class TestHTMXAttributes:
+    """Validate critical HTMX attributes are present on forms and buttons."""
+
+    def test_index_form_attributes(self, sample_habits, deterministic, client):
+        """Index page form has correct HTMX attributes for auto-save."""
+        response = client.get("/?day=2025-01-15")
+        doc = parse_html(response.text)
+
+        assert_htmx_form(
+            doc,
+            "form",
+            hx_method="save",
+            hx_target="#save-status",
+            hx_swap="innerHTML",
+        )
+        assert_element_exists(doc, "#save-status")
+
+    def test_index_habit_data_attributes(self, sample_habits, deterministic, client):
+        """Index page habit groups have data attributes for keyboard shortcuts."""
+        response = client.get("/?day=2025-01-15")
+        doc = parse_html(response.text)
+
+        # Check first habit has required data attributes
+        assert_data_attributes(
+            doc,
+            ".habit-group",
+            habit_id="workout",
+            habit_type="binary",
+        )
+
+    def test_habits_page_archive_button_attributes(
+        self, sample_habits, deterministic, client
+    ):
+        """Archive button has correct HTMX attributes and confirmation."""
+        response = client.get("/habits")
+        doc = parse_html(response.text)
+
+        # Find archive button for first habit
+        assert_htmx_button(
+            doc,
+            'button[hx-delete^="habits/"]',
+            hx_method="habits/workout",
+            hx_target="#habit-list",
+            hx_confirm="Archive",
+        )
+
+    def test_habits_page_sortable_structure(self, sample_habits, deterministic, client):
+        """Habit list has structure required for SortableJS."""
+        response = client.get("/habits")
+        doc = parse_html(response.text)
+
+        assert_element_exists(doc, "#habit-list")
+        assert_element_exists(doc, "#sortable-habits")
+
+        # Each habit item has data-id for sorting
+        assert_element_count(doc, ".habit-list-item[data-id]", 3)
+
+    def test_edit_form_attributes(self, sample_habits, deterministic, client):
+        """Edit form has correct HTMX attributes for auto-save."""
+        response = client.get("/habits/workout/edit")
+        doc = parse_html(response.text)
+
+        assert_htmx_form(
+            doc,
+            "form",
+            hx_method="../workout",
+            hx_target="#save-status",
+            hx_swap="innerHTML",
+        )
+        assert_element_exists(doc, "#save-status")
