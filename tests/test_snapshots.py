@@ -8,14 +8,6 @@ intentional changes.
 from datetime import date
 
 import pytest
-from htmx_helpers import (
-    assert_data_attributes,
-    assert_element_count,
-    assert_element_exists,
-    assert_htmx_button,
-    assert_htmx_form,
-    parse_html,
-)
 
 from habit_tracker.models import (
     BinaryEntry,
@@ -25,6 +17,14 @@ from habit_tracker.models import (
     JournalHabit,
     SingleSelectEntry,
     SingleSelectHabit,
+)
+from htmx_helpers import (
+    assert_data_attributes,
+    assert_element_count,
+    assert_element_exists,
+    assert_htmx_button,
+    assert_htmx_form,
+    parse_html,
 )
 
 # =============================================================================

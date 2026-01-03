@@ -58,3 +58,19 @@ The `data/` directory is gitignored (user data).
 - `src/habit_tracker/models.py` - Pydantic models with discriminated unions
 - `src/habit_tracker/storage.py` - JSON file operations
 - `src/habit_tracker/main.py` - FastAPI routes (Phase 2)
+
+## Snapshot Testing
+
+The project uses Syrupy for HTTP response snapshots:
+
+```bash
+make snapshot-update  # Update snapshots after intentional changes
+make snapshot-check   # Warn about unused snapshots
+```
+
+Snapshot files are stored in `tests/__snapshots__/` and should be committed.
+Review snapshot changes in PRs as carefully as code changes.
+
+### Determinism
+
+Snapshot tests use `frozen_time` fixture (2025-01-15 10:30:00) for reproducible timestamps and "today" highlighting. The `deterministic` fixture combines this with `test_storage`.

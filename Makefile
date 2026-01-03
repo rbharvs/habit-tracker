@@ -1,4 +1,4 @@
-.PHONY: help fix check format lint typecheck test dev browser clean build deploy
+.PHONY: help fix check format lint typecheck test dev browser clean build deploy snapshot-update snapshot-check
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -37,3 +37,9 @@ build:  ## Build SAM application (uses container locally, skips on CI/Linux)
 
 deploy: fix build  ## Deploy to AWS Lambda (requires env vars from .env)
 	uv run sam deploy --parameter-overrides "AllowedIPs=$(ALLOWED_IPS)" "DomainName=$(DOMAIN_NAME)" "CertificateArn=$(CERTIFICATE_ARN)"
+
+snapshot-update:  ## Update snapshot files
+	uv run pytest tests/test_snapshots.py --snapshot-update
+
+snapshot-check:  ## Check for unused snapshots
+	uv run pytest --snapshot-warn-unused
