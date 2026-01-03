@@ -1,45 +1,47 @@
 <ul class="habit-list">
 {% for habit in habits %}
 <li class="habit-list-item {% if habit.archived %}archived{% endif %}">
-    <div class="habit-info">
-        <span class="habit-type-badge">{{ habit.type | replace("_", " ") | title }}</span>
-        <strong>{{ habit.name }}</strong>
-        <small class="habit-id">({{ habit.id }})</small>
-        {% if habit.archived %}<span class="archived-badge">Archived</span>{% endif %}
+    <div class="habit-header-row">
+        <div class="habit-meta">
+            <span class="habit-type-badge">{{ habit.type | replace("_", " ") | title }}</span>
+            <small class="habit-id">{{ habit.id }}</small>
+            {% if habit.archived %}<span class="archived-badge">Archived</span>{% endif %}
+        </div>
+        <div class="habit-actions">
+            {% if not habit.archived %}
+            <button class="outline secondary"
+                    hx-post="habits/{{ habit.id }}/move-up"
+                    hx-target="#habit-list"
+                    hx-swap="innerHTML"
+                    title="Move up">
+                &uarr;
+            </button>
+            <button class="outline secondary"
+                    hx-post="habits/{{ habit.id }}/move-down"
+                    hx-target="#habit-list"
+                    hx-swap="innerHTML"
+                    title="Move down">
+                &darr;
+            </button>
+            <a href="habits/{{ habit.id }}/edit" role="button" class="outline secondary" title="Edit">
+                Edit
+            </a>
+            <button class="outline secondary"
+                    hx-delete="habits/{{ habit.id }}"
+                    hx-target="#habit-list"
+                    hx-swap="innerHTML"
+                    hx-confirm="Archive this habit? It will be hidden from daily view but entries will be preserved.">
+                Archive
+            </button>
+            {% endif %}
+            <button class="outline secondary delete-btn"
+                    data-habit-id="{{ habit.id }}"
+                    onclick="confirmHardDelete('{{ habit.id }}', '{{ habit.name }}')">
+                Delete
+            </button>
+        </div>
     </div>
-    <div class="habit-actions">
-        {% if not habit.archived %}
-        <button class="outline secondary"
-                hx-post="habits/{{ habit.id }}/move-up"
-                hx-target="#habit-list"
-                hx-swap="innerHTML"
-                title="Move up">
-            &uarr;
-        </button>
-        <button class="outline secondary"
-                hx-post="habits/{{ habit.id }}/move-down"
-                hx-target="#habit-list"
-                hx-swap="innerHTML"
-                title="Move down">
-            &darr;
-        </button>
-        <a href="habits/{{ habit.id }}/edit" role="button" class="outline secondary" title="Edit">
-            Edit
-        </a>
-        <button class="outline secondary"
-                hx-delete="habits/{{ habit.id }}"
-                hx-target="#habit-list"
-                hx-swap="innerHTML"
-                hx-confirm="Archive this habit? It will be hidden from daily view but entries will be preserved.">
-            Archive
-        </button>
-        {% endif %}
-        <button class="outline secondary delete-btn"
-                data-habit-id="{{ habit.id }}"
-                onclick="confirmHardDelete('{{ habit.id }}', '{{ habit.name }}')">
-            Delete
-        </button>
-    </div>
+    <div class="habit-name">{{ habit.name }}</div>
 </li>
 {% else %}
 <li class="no-habits">No habits configured. Create one below!</li>

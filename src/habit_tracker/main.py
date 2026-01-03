@@ -594,11 +594,8 @@ def update_habit(
     # Response based on request type
     is_htmx = request.headers.get("HX-Request")
     if is_htmx:
-        # Return redirect header for HTMX
-        # From /habits/{id}/edit, ".." goes to /habits/
-        response = Response(status_code=200)
-        response.headers["HX-Redirect"] = ".."
-        return response
+        # Return saved status for autosave (no redirect)
+        return HTMLResponse("Saved")
     else:
         return RedirectResponse(url="..", status_code=303)
 

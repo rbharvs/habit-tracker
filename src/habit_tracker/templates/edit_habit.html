@@ -2,12 +2,12 @@
 
 {% block content %}
 <header class="date-nav">
-    <a href="../..">&larr; Back to Habits</a>
+    <a href="/habits">&larr; Back to Habits</a>
 </header>
 
 <h2>Edit Habit: {{ habit.name }}</h2>
 
-<form method="post" action="../{{ habit.id }}" hx-put="../{{ habit.id }}" hx-target="body" autocomplete="off">
+<form method="post" action="../{{ habit.id }}" hx-put="../{{ habit.id }}" hx-target="#save-status" hx-swap="innerHTML" autocomplete="off">
 
     <label>
         ID (cannot be changed)
@@ -87,8 +87,8 @@
     {% endif %}
 
     <div class="form-actions">
-        <button type="submit">Save Changes</button>
-        <a href="../.." role="button" class="outline secondary">Cancel</a>
+        <a href="/habits" role="button" class="outline">Done</a>
+        <span id="save-status"></span>
     </div>
 </form>
 {% endblock %}
@@ -116,6 +116,16 @@ function addOption() {
     `;
     list.appendChild(row);
     input.value = '';
+
+    // Auto-save after adding option
+    document.querySelector('form').requestSubmit();
 }
+
+// Auto-save on change
+document.querySelectorAll('input[name], textarea[name]').forEach(el => {
+    el.addEventListener('change', () => {
+        document.querySelector('form').requestSubmit();
+    });
+});
 </script>
 {% endblock %}

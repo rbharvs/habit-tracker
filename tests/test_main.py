@@ -1004,10 +1004,8 @@ def test_edit_habit_back_link_uses_correct_path(test_storage):
     response = client.get("/habits/workout/edit")
 
     assert response.status_code == 200
-    # From /habits/workout/edit, we need "../.." to reach /habits
-    # Should NOT contain "./habits" which would incorrectly go to /habits/workout/habits
-    assert 'href="../.."' in response.text
-    assert 'href="./habits"' not in response.text
+    # Back link and Done button should go to /habits
+    assert 'href="/habits"' in response.text
 
 
 def test_edit_habit_form_action_uses_correct_path(test_storage):
@@ -1177,7 +1175,7 @@ def test_update_numeric_habit(test_storage):
 
 
 def test_update_habit_htmx(test_storage):
-    """PUT /habits/{id} with HTMX returns redirect header."""
+    """PUT /habits/{id} with HTMX returns saved status for autosave."""
     test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
 
     client = TestClient(app)
@@ -1188,8 +1186,7 @@ def test_update_habit_htmx(test_storage):
     )
 
     assert response.status_code == 200
-    # Redirect to habits list (from /habits/{id}/edit page, ".." = /habits/)
-    assert response.headers.get("HX-Redirect") == ".."
+    assert response.text == "Saved"
 
 
 def test_update_journal_habit(test_storage):
