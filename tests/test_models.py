@@ -293,7 +293,13 @@ def test_select_habit_rejects_more_than_9_options():
 
 def test_habit_discriminated_union_with_new_types():
     """Habit union deserializes new types correctly."""
-    from habit_tracker.models import Habit, MultiSelectHabit, NumericHabit, TimeHabit
+    from habit_tracker.models import (
+        Habit,
+        LogHabit,
+        MultiSelectHabit,
+        NumericHabit,
+        TimeHabit,
+    )
 
     adapter = TypeAdapter(list[Habit])
 
@@ -306,13 +312,15 @@ def test_habit_discriminated_union_with_new_types():
             "name": "Exercises",
             "options": ["a", "b"],
         },
+        {"type": "log", "id": "notes", "name": "Notes"},
     ]
 
     habits = adapter.validate_python(data)
-    assert len(habits) == 3
+    assert len(habits) == 4
     assert isinstance(habits[0], NumericHabit)
     assert isinstance(habits[1], TimeHabit)
     assert isinstance(habits[2], MultiSelectHabit)
+    assert isinstance(habits[3], LogHabit)
 
 
 # =============================================================================
@@ -424,6 +432,7 @@ def test_habit_loads_without_color_fields():
             "name": "Exercises",
             "options": ["a", "b"],
         },
+        {"type": "log", "id": "activity", "name": "Activity Log"},
     ]
     habits = adapter.validate_python(data)
 
@@ -434,6 +443,7 @@ def test_habit_loads_without_color_fields():
     assert habits[3].target_value is None
     assert habits[4].color_filled == "#22c55e"
     assert habits[5].option_colors == {}
+    assert habits[6].color_filled == "#22c55e"
 
 
 def test_habit_color_roundtrip():
@@ -447,3 +457,61 @@ def test_habit_color_roundtrip():
     restored = BinaryHabit(**data)
     assert restored.color_yes == "#aabbcc"
     assert restored.color_no == "#ddeeff"
+
+
+# =============================================================================
+# LogHabit Tests
+# =============================================================================
+
+
+def test_log_habit_creation():
+    """LogHabit can be created with required fields."""
+    from habit_tracker.models import LogHabit
+
+    habit = LogHabit(id="notes", name="Daily Notes")
+    assert habit.type == "log"
+    assert habit.id == "notes"
+    assert habit.name == "Daily Notes"
+    assert habit.archived is False
+    assert habit.color_filled == "#22c55e"
+
+
+def test_log_entry_creation():
+    """LogEntry holds a list of LogItem values."""
+    from habit_tracker.models import LogEntry, LogItem
+
+    entry = LogEntry(
+        value=[
+            LogItem(timestamp=time(9, 15), text="Morning standup"),
+            LogItem(timestamp=time(14, 30), text="Afternoon review"),
+        ]
+    )
+    assert entry.type == "log"
+    assert len(entry.value) == 2
+    assert entry.value[0].timestamp == time(9, 15)
+    assert entry.value[0].text == "Morning standup"
+
+
+def test_log_item_requires_text():
+    """LogItem rejects empty text."""
+    from habit_tracker.models import LogItem
+
+    with pytest.raises(ValidationError):
+        LogItem(timestamp=time(9, 0), text="")
+
+
+def test_log_entry_max_100_items():
+    """LogEntry rejects more than 100 items."""
+    from habit_tracker.models import LogEntry, LogItem
+
+    items = [LogItem(timestamp=time(9, 0), text=f"Item {i}") for i in range(101)]
+    with pytest.raises(ValidationError):
+        LogEntry(value=items)
+
+
+def test_log_entry_empty_valid():
+    """LogEntry with empty list is valid."""
+    from habit_tracker.models import LogEntry
+
+    entry = LogEntry(value=[])
+    assert entry.value == []

@@ -92,6 +92,38 @@
             {% endfor %}
             </div>
         </fieldset>
+
+        {% elif habit.type == "log" %}
+        <div class="habit-header">
+            <span class="habit-label">{{ habit.name }}</span>
+            <span class="keyboard-hint">Press A to add</span>
+        </div>
+        <!-- Hidden field holds JSON array of log items -->
+        <input type="hidden" name="habit_{{ habit.id }}" id="habit_{{ habit.id }}_data"
+               value="{{ entries[habit.id].value | log_items_json if entries.get(habit.id) else '[]' }}">
+
+        <div class="log-entries" id="log_{{ habit.id }}_entries">
+            {% if entries.get(habit.id) and entries[habit.id].value %}
+                {% for item in entries[habit.id].value %}
+                <div class="log-entry">
+                    <input type="time" class="log-time" value="{{ item.timestamp.strftime('%H:%M') }}">
+                    <textarea class="log-text" rows="1">{{ item.text }}</textarea>
+                    <button type="button" class="log-delete" title="Delete">&times;</button>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">No entries yet</div>
+            {% endif %}
+        </div>
+        <div class="add-log-row">
+            <input type="text" class="log-input" placeholder="Add a log entry...">
+            <button type="button" class="log-add-btn">Add</button>
+        </div>
+        <div class="log-count" id="log_{{ habit.id }}_count">
+            {% if entries.get(habit.id) and entries[habit.id].value %}
+                {{ entries[habit.id].value | length }} entr{{ 'y' if entries[habit.id].value | length == 1 else 'ies' }} today
+            {% endif %}
+        </div>
         {% endif %}
     </div>
     {% endfor %}
@@ -172,8 +204,131 @@ document.querySelectorAll('.habit-group').forEach(group => {
                     e.preventDefault();
                 }
             }
+        } else if (habitType === 'log') {
+            if (key === 'a' || key === 'Enter') {
+                const input = group.querySelector('.log-input');
+                if (input) {
+                    input.focus();
+                    e.preventDefault();
+                }
+            }
         }
     });
+});
+
+// ============================================================================
+// Log Habit Functions
+// ============================================================================
+
+// Auto-resize textarea to fit content
+function autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+// Serialize log entries to hidden field and trigger auto-save
+function updateLogData(habitId) {
+    const entriesDiv = document.getElementById(`log_${habitId}_entries`);
+    const entries = entriesDiv.querySelectorAll('.log-entry');
+    const items = Array.from(entries).map(entry => ({
+        timestamp: entry.querySelector('.log-time').value,
+        text: entry.querySelector('.log-text').value
+    })).filter(item => item.text.trim());
+
+    document.getElementById(`habit_${habitId}_data`).value = JSON.stringify(items);
+    updateLogCount(habitId, items.length);
+    document.querySelector('form').requestSubmit();
+}
+
+// Update entry count display
+function updateLogCount(habitId, count) {
+    const countDiv = document.getElementById(`log_${habitId}_count`);
+    if (count > 0) {
+        countDiv.textContent = count + ' entr' + (count === 1 ? 'y' : 'ies') + ' today';
+    } else {
+        countDiv.textContent = '';
+    }
+}
+
+// Add new log entry
+function addLogEntry(habitId) {
+    const group = document.querySelector(`[data-habit-id="${habitId}"]`);
+    const input = group.querySelector('.log-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const entriesDiv = document.getElementById(`log_${habitId}_entries`);
+
+    // Remove empty state if present
+    const emptyState = entriesDiv.querySelector('.empty-state');
+    if (emptyState) emptyState.remove();
+
+    // Create timestamp (current time)
+    const now = new Date();
+    const timestamp = now.toTimeString().slice(0, 5);  // HH:MM
+
+    // Create new entry element
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = `
+        <input type="time" class="log-time" value="${timestamp}">
+        <textarea class="log-text" rows="1">${text}</textarea>
+        <button type="button" class="log-delete" title="Delete">&times;</button>
+    `;
+
+    // Wire up event listeners
+    wireLogEntryEvents(entry, habitId);
+
+    entriesDiv.appendChild(entry);
+    autoResizeTextarea(entry.querySelector('.log-text'));
+
+    // Clear input and keep focus for rapid entry
+    input.value = '';
+    input.focus();
+
+    updateLogData(habitId);
+}
+
+// Wire up events for a log entry (time change, text change, delete)
+function wireLogEntryEvents(entry, habitId) {
+    const textarea = entry.querySelector('.log-text');
+    entry.querySelector('.log-time').addEventListener('change', () => updateLogData(habitId));
+    textarea.addEventListener('input', () => {
+        autoResizeTextarea(textarea);
+        updateLogData(habitId);
+    });
+    entry.querySelector('.log-delete').addEventListener('click', () => {
+        entry.remove();
+        updateLogData(habitId);
+    });
+}
+
+// Initialize all log habits on page load
+document.querySelectorAll('.habit-group[data-habit-type="log"]').forEach(group => {
+    const habitId = group.dataset.habitId;
+
+    // Wire up existing entries
+    group.querySelectorAll('.log-entry').forEach(entry => {
+        wireLogEntryEvents(entry, habitId);
+        autoResizeTextarea(entry.querySelector('.log-text'));
+    });
+
+    // Add button click
+    const addBtn = group.querySelector('.log-add-btn');
+    if (addBtn) {
+        addBtn.addEventListener('click', () => addLogEntry(habitId));
+    }
+
+    // Enter in log input adds entry
+    const logInput = group.querySelector('.log-input');
+    if (logInput) {
+        logInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                addLogEntry(habitId);
+                e.preventDefault();
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

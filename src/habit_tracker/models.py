@@ -11,6 +11,14 @@ SelectOptions = Annotated[
     Field(max_length=9, description="0-9 options (keyboard shortcuts)"),
 ]
 
+
+class LogItem(BaseModel):
+    """A single timestamped log entry."""
+
+    timestamp: time
+    text: str = Field(min_length=1)
+
+
 # =============================================================================
 # Habit Definitions (discriminated union by "type" field)
 # =============================================================================
@@ -81,6 +89,16 @@ class MultiSelectHabit(BaseModel):
     option_colors: dict[str, str] = {}  # option -> hex color
 
 
+class LogHabit(BaseModel):
+    """A log habit for timestamped text entries throughout the day."""
+
+    type: Literal["log"] = "log"
+    id: HabitId
+    name: HabitName
+    archived: bool = False
+    color_filled: str = "#22c55e"  # green
+
+
 # Discriminated union: Pydantic uses "type" field to determine which model
 Habit = Annotated[
     BinaryHabit
@@ -88,7 +106,8 @@ Habit = Annotated[
     | JournalHabit
     | NumericHabit
     | TimeHabit
-    | MultiSelectHabit,
+    | MultiSelectHabit
+    | LogHabit,
     Field(discriminator="type"),
 ]
 
@@ -139,6 +158,13 @@ class MultiSelectEntry(BaseModel):
     value: list[str]  # Selected options (can be empty)
 
 
+class LogEntry(BaseModel):
+    """Entry for a log habit."""
+
+    type: Literal["log"] = "log"
+    value: list[LogItem] = Field(default_factory=list, max_length=100)
+
+
 # Discriminated union for entries
 HabitEntry = Annotated[
     BinaryEntry
@@ -146,7 +172,8 @@ HabitEntry = Annotated[
     | JournalEntry
     | NumericEntry
     | TimeEntry
-    | MultiSelectEntry,
+    | MultiSelectEntry
+    | LogEntry,
     Field(discriminator="type"),
 ]
 

@@ -10,6 +10,8 @@ from habit_tracker.models import (
     BinaryHabit,
     DailyEntries,
     JournalHabit,
+    LogEntry,
+    LogHabit,
     MultiSelectHabit,
     NumericHabit,
     SingleSelectHabit,
@@ -1246,3 +1248,102 @@ def test_update_multi_select_habit(test_storage):
     assert habits[0].name == "Workout Types"
     assert habits[0].options == ["cardio", "strength", "flexibility"]
     assert habits[0].option_colors["cardio"] == "#ef4444"
+
+
+# =============================================================================
+# LogHabit Route Tests
+# =============================================================================
+
+
+def test_save_log_entry(test_storage):
+    """POST /save with JSON log data creates log entry."""
+    import json
+
+    test_storage.save_habits([LogHabit(id="notes", name="Notes")])
+
+    client = TestClient(app)
+    log_data = json.dumps(
+        [
+            {"timestamp": "09:15", "text": "First note"},
+            {"timestamp": "14:30", "text": "Second note"},
+        ]
+    )
+    response = client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_notes": log_data},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert entries is not None
+    assert "notes" in entries.entries
+    log_entry = entries.entries["notes"]
+    assert isinstance(log_entry, LogEntry)
+    assert len(log_entry.value) == 2
+
+
+def test_save_log_entry_empty(test_storage):
+    """POST /save with empty log data creates empty entry."""
+    test_storage.save_habits([LogHabit(id="notes", name="Notes")])
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_notes": "[]"},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert entries.entries["notes"].value == []
+
+
+def test_save_log_entry_malformed_json(test_storage):
+    """POST /save with malformed JSON defaults to empty entry."""
+    test_storage.save_habits([LogHabit(id="notes", name="Notes")])
+
+    client = TestClient(app)
+    client.post(
+        "/save",
+        data={"date": "2025-01-05", "habit_notes": "not valid json"},
+        follow_redirects=False,
+    )
+
+    entries = test_storage.load_entries(date(2025, 1, 5))
+    assert entries.entries["notes"].value == []
+
+
+def test_create_log_habit(test_storage):
+    """POST /habits creates log habit."""
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={
+            "type": "log",
+            "id": "notes",
+            "name": "Daily Notes",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    habits = test_storage.load_habits()
+    assert len(habits) == 1
+    assert isinstance(habits[0], LogHabit)
+
+
+def test_update_log_habit(test_storage):
+    """PUT /habits/{id} updates log habit fields."""
+    test_storage.save_habits([LogHabit(id="notes", name="Notes")])
+
+    client = TestClient(app)
+    response = client.put(
+        "/habits/notes",
+        data={"name": "Work Notes", "color_filled": "#3b82f6"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    habits = test_storage.load_habits()
+    assert habits[0].name == "Work Notes"
+    assert habits[0].color_filled == "#3b82f6"

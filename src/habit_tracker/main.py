@@ -1,6 +1,7 @@
 """FastAPI app with routes for viewing/editing daily entries."""
 
 import calendar as cal
+import json
 from datetime import date, time, timedelta
 from pathlib import Path
 from typing import Annotated, assert_never
@@ -24,6 +25,9 @@ from .models import (
     HabitEntry,
     JournalEntry,
     JournalHabit,
+    LogEntry,
+    LogHabit,
+    LogItem,
     MultiSelectEntry,
     MultiSelectHabit,
     NumericEntry,
@@ -37,6 +41,19 @@ from .storage import Storage
 
 app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+
+
+def log_items_to_json(items: list) -> str:
+    """Convert list of LogItem objects to JSON-serializable format."""
+    return json.dumps(
+        [
+            {"timestamp": item.timestamp.strftime("%H:%M"), "text": item.text}
+            for item in items
+        ]
+    )
+
+
+templates.env.filters["log_items_json"] = log_items_to_json
 
 
 def _get_entry_color(habit: Habit, entry: HabitEntry) -> str:
@@ -68,6 +85,9 @@ def _get_entry_color(habit: Habit, entry: HabitEntry) -> str:
                     return habit.color_target
         case TimeHabit():
             if isinstance(entry, TimeEntry):
+                return habit.color_filled
+        case LogHabit():
+            if isinstance(entry, LogEntry) and entry.value:
                 return habit.color_filled
         case _ as unreachable:
             assert_never(unreachable)
@@ -118,7 +138,8 @@ def save(request: Request, storage: Storage, form: FormDataDep) -> Response:
         | JournalEntry
         | NumericEntry
         | TimeEntry
-        | MultiSelectEntry,
+        | MultiSelectEntry
+        | LogEntry,
     ] = {}
     for habit in habits:
         field_name = f"habit_{habit.id}"
@@ -145,6 +166,21 @@ def save(request: Request, storage: Storage, form: FormDataDep) -> Response:
                 # Multiple checkboxes with same name come as getlist
                 selected = form.getlist(field_name)
                 entries[habit.id] = MultiSelectEntry(value=[str(v) for v in selected])
+            case LogHabit():
+                raw = str(form.get(field_name, "[]"))
+                try:
+                    items_data = json.loads(raw)
+                    items = [
+                        LogItem(
+                            timestamp=time.fromisoformat(item["timestamp"]),
+                            text=item["text"],
+                        )
+                        for item in items_data
+                        if item.get("text", "").strip()
+                    ]
+                    entries[habit.id] = LogEntry(value=items)
+                except (json.JSONDecodeError, KeyError, ValueError):
+                    entries[habit.id] = LogEntry(value=[])
             case _ as unreachable:
                 assert_never(unreachable)
 
@@ -205,6 +241,8 @@ def create_habit(request: Request, storage: Storage, form: FormDataDep) -> Respo
                 if o.strip()
             ]
             new_habit = MultiSelectHabit(id=habit_id, name=habit_name, options=options)
+        case "log":
+            new_habit = LogHabit(id=habit_id, name=habit_name)
         case _:
             return HTMLResponse("Invalid habit type", status_code=400)
 
@@ -558,6 +596,12 @@ def update_habit(
             if not _is_valid_hex_color(color_target):
                 raise HTTPException(status_code=400, detail="Invalid color format")
             updates["color_target"] = color_target
+
+        case LogHabit():
+            color_filled = str(form.get("color_filled", habit.color_filled))
+            if not _is_valid_hex_color(color_filled):
+                raise HTTPException(status_code=400, detail="Invalid color format")
+            updates["color_filled"] = color_filled
 
         case _ as unreachable:  # pragma: no cover
             assert_never(unreachable)  # type: ignore[type-assertion-failure]

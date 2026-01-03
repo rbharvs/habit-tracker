@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Habit Type Mockup</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #1a1a1a;
+            color: #e5e5e5;
+        }
+        h2 {
+            margin-top: 0;
+            color: #fff;
+        }
+        .habit-group {
+            border: 1px solid #333;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .habit-group:focus {
+            outline: 2px solid #22c55e;
+            outline-offset: 2px;
+        }
+        .habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .habit-label {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .keyboard-hint {
+            font-size: 0.75rem;
+            color: #888;
+            background: #2a2a2a;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        .log-entries {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .log-entry {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+            background: #2a2a2a;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .log-time {
+            width: 5.5rem;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #444;
+            border-radius: 0.25rem;
+            background: #1a1a1a;
+            color: #e5e5e5;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        .log-time:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+        .log-text {
+            flex: 1;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #444;
+            border-radius: 0.25rem;
+            background: #1a1a1a;
+            color: #e5e5e5;
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: none;
+            overflow: hidden;
+            min-height: 1.5rem;
+            line-height: 1.4;
+        }
+        .log-text:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+        .log-delete {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 1.2rem;
+            line-height: 1;
+            border-radius: 0.25rem;
+        }
+        .log-delete:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .add-log-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .add-log-row .log-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #444;
+            border-radius: 0.25rem;
+            background: #2a2a2a;
+            color: #e5e5e5;
+            font-size: 0.9rem;
+        }
+        .add-log-row .log-input:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+        .add-log-row button {
+            padding: 0.5rem 1rem;
+            background: #22c55e;
+            color: #000;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .add-log-row button:hover {
+            background: #16a34a;
+        }
+        .empty-state {
+            color: #666;
+            font-style: italic;
+            padding: 1rem;
+            text-align: center;
+            background: #2a2a2a;
+            border-radius: 0.25rem;
+            margin-bottom: 0.75rem;
+        }
+        .log-count {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 2rem 0;
+        }
+        h3 {
+            color: #888;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .instructions {
+            background: #2a2a2a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #fff;
+        }
+        .instructions kbd {
+            background: #444;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+        }
+        .instructions ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <h2>Log Habit Type Mockup</h2>
+
+    <div class="instructions">
+        <h3>Keyboard Shortcuts</h3>
+        <ul>
+            <li>Click habit or <kbd>Tab</kbd> to focus the habit group</li>
+            <li>Press <kbd>A</kbd> to focus the input field</li>
+            <li>Type your log entry, press <kbd>Enter</kbd> to add</li>
+            <li>Edit any timestamp or text inline (auto-saves on change)</li>
+            <li>Click &times; to delete an entry</li>
+        </ul>
+    </div>
+
+    <!-- Example 1: Empty state -->
+    <h3>Empty State</h3>
+    <div class="habit-group" tabindex="0" data-habit-type="log" data-habit-id="notes">
+        <div class="habit-header">
+            <span class="habit-label">Daily Notes</span>
+            <span class="keyboard-hint">Press A to add</span>
+        </div>
+        <!-- Hidden field for form submission (in real app) -->
+        <input type="hidden" name="habit_notes" id="habit_notes_data" value="[]">
+        <div class="log-entries" id="log_notes_entries">
+            <div class="empty-state">No entries yet. Press L to add your first log.</div>
+        </div>
+        <div class="add-log-row">
+            <input type="text" class="log-input" placeholder="What's on your mind?">
+            <button type="button">Add</button>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Example 2: With entries -->
+    <h3>With Entries (Editable)</h3>
+    <div class="habit-group" tabindex="0" data-habit-type="log" data-habit-id="worklog">
+        <div class="habit-header">
+            <span class="habit-label">Work Log</span>
+            <span class="keyboard-hint">Press A to add</span>
+        </div>
+        <input type="hidden" name="habit_worklog" id="habit_worklog_data" value="[]">
+        <div class="log-entries" id="log_worklog_entries">
+            <div class="log-entry">
+                <input type="time" class="log-time" value="09:15">
+                <textarea class="log-text" rows="1">Started working on the new feature. Feeling optimistic about the approach.</textarea>
+                <button class="log-delete" title="Delete">&times;</button>
+            </div>
+            <div class="log-entry">
+                <input type="time" class="log-time" value="11:42">
+                <textarea class="log-text" rows="1">Hit a snag with the API integration. Need to rethink the data model.</textarea>
+                <button class="log-delete" title="Delete">&times;</button>
+            </div>
+            <div class="log-entry">
+                <input type="time" class="log-time" value="14:30">
+                <textarea class="log-text" rows="1">Figured it out! The solution was simpler than I thought.</textarea>
+                <button class="log-delete" title="Delete">&times;</button>
+            </div>
+        </div>
+        <div class="add-log-row">
+            <input type="text" class="log-input" placeholder="What's on your mind?">
+            <button type="button">Add</button>
+        </div>
+        <div class="log-count">3 entries today</div>
+    </div>
+
+    <hr>
+
+    <!-- Example 3: Food log variant -->
+    <h3>Variant: Food Log</h3>
+    <div class="habit-group" tabindex="0" data-habit-type="log" data-habit-id="food">
+        <div class="habit-header">
+            <span class="habit-label">Food Log</span>
+            <span class="keyboard-hint">Press A to add</span>
+        </div>
+        <input type="hidden" name="habit_food" id="habit_food_data" value="[]">
+        <div class="log-entries" id="log_food_entries">
+            <div class="log-entry">
+                <input type="time" class="log-time" value="08:00">
+                <textarea class="log-text" rows="1">Oatmeal with berries, black coffee</textarea>
+                <button class="log-delete" title="Delete">&times;</button>
+            </div>
+            <div class="log-entry">
+                <input type="time" class="log-time" value="12:30">
+                <textarea class="log-text" rows="1">Grilled chicken salad, sparkling water</textarea>
+                <button class="log-delete" title="Delete">&times;</button>
+            </div>
+        </div>
+        <div class="add-log-row">
+            <input type="text" class="log-input" placeholder="What did you eat?">
+            <button type="button">Add</button>
+        </div>
+        <div class="log-count">2 entries today</div>
+    </div>
+
+    <script>
+        // Auto-resize textarea to fit content
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        // Serialize log entries to hidden field
+        function updateLogData(habitId) {
+            const entriesDiv = document.getElementById(`log_${habitId}_entries`);
+            const entries = entriesDiv.querySelectorAll('.log-entry');
+            const items = Array.from(entries).map(entry => ({
+                timestamp: entry.querySelector('.log-time').value,
+                text: entry.querySelector('.log-text').value
+            })).filter(item => item.text.trim());
+
+            document.getElementById(`habit_${habitId}_data`).value = JSON.stringify(items);
+            updateCount(habitId);
+
+            // In real app: document.querySelector('form').requestSubmit();
+        }
+
+        // Add new log entry
+        function addLogEntry(habitId) {
+            const group = document.querySelector(`[data-habit-id="${habitId}"]`);
+            const input = group.querySelector('.log-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const entriesDiv = document.getElementById(`log_${habitId}_entries`);
+
+            // Remove empty state if present
+            const emptyState = entriesDiv.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+
+            // Create timestamp (current time)
+            const now = new Date();
+            const timestamp = now.toTimeString().slice(0, 5);  // HH:MM
+
+            // Create new entry
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <input type="time" class="log-time" value="${timestamp}">
+                <textarea class="log-text" rows="1">${text}</textarea>
+                <button class="log-delete" title="Delete">&times;</button>
+            `;
+
+            const textarea = entry.querySelector('.log-text');
+
+            // Add event listeners
+            entry.querySelector('.log-time').addEventListener('change', () => updateLogData(habitId));
+            textarea.addEventListener('input', () => {
+                autoResize(textarea);
+                updateLogData(habitId);
+            });
+            entry.querySelector('.log-delete').addEventListener('click', () => {
+                entry.remove();
+                updateLogData(habitId);
+            });
+
+            entriesDiv.appendChild(entry);
+            autoResize(textarea);
+
+            // Clear input and keep focus for rapid entry
+            input.value = '';
+            input.focus();
+
+            updateLogData(habitId);
+        }
+
+        function updateCount(habitId) {
+            const entriesDiv = document.getElementById(`log_${habitId}_entries`);
+            const count = entriesDiv.querySelectorAll('.log-entry').length;
+            const group = entriesDiv.closest('.habit-group');
+            let countDiv = group.querySelector('.log-count');
+
+            if (count > 0) {
+                if (!countDiv) {
+                    countDiv = document.createElement('div');
+                    countDiv.className = 'log-count';
+                    group.querySelector('.add-log-row').after(countDiv);
+                }
+                countDiv.textContent = count + ' entr' + (count === 1 ? 'y' : 'ies') + ' today';
+            } else if (countDiv) {
+                countDiv.remove();
+            }
+        }
+
+        // Initialize all habit groups
+        document.querySelectorAll('.habit-group[data-habit-type="log"]').forEach(group => {
+            const habitId = group.dataset.habitId;
+
+            // Keyboard shortcut: L to focus input
+            group.addEventListener('keydown', (e) => {
+                // Ignore if already in an input
+                if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+                if (e.key.toLowerCase() === 'a' || e.key === 'Enter') {
+                    const input = group.querySelector('.log-input');
+                    input.focus();
+                    e.preventDefault();
+                }
+            });
+
+            // Enter in log input adds entry
+            const logInput = group.querySelector('.log-input');
+            logInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    addLogEntry(habitId);
+                    e.preventDefault();
+                }
+            });
+
+            // Add button click
+            const addBtn = group.querySelector('.add-log-row button');
+            addBtn.addEventListener('click', () => addLogEntry(habitId));
+
+            // Wire up existing entries for edit/delete
+            group.querySelectorAll('.log-entry').forEach(entry => {
+                const textarea = entry.querySelector('.log-text');
+                entry.querySelector('.log-time').addEventListener('change', () => updateLogData(habitId));
+                textarea.addEventListener('input', () => {
+                    autoResize(textarea);
+                    updateLogData(habitId);
+                });
+                entry.querySelector('.log-delete').addEventListener('click', () => {
+                    entry.remove();
+                    updateLogData(habitId);
+                });
+                // Auto-resize on load
+                autoResize(textarea);
+            });
+
+            // Initialize JSON data
+            updateLogData(habitId);
+        });
+    </script>
+</body>
+</html>
