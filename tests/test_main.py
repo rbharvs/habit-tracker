@@ -874,3 +874,66 @@ def test_calendar_habit_selector_uses_correct_relative_paths(test_storage):
     # Should NOT have ./calendar/ in the selector JavaScript
     assert "'./calendar/'" not in response.text
     assert '"./calendar/"' not in response.text
+
+
+# =============================================================================
+# Calendar Color Rendering Tests (Phase 4)
+# =============================================================================
+
+
+def test_calendar_binary_yes_color(test_storage):
+    """Calendar shows correct color for binary yes entry."""
+    test_storage.save_habits(
+        [BinaryHabit(id="workout", name="Workout", color_yes="#00ff00")]
+    )
+    test_storage.save_entries(
+        DailyEntries(
+            date=date(2025, 1, 15), entries={"workout": BinaryEntry(value=True)}
+        )
+    )
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout?year=2025&month=1")
+
+    assert "#00ff00" in response.text
+
+
+def test_calendar_binary_no_color(test_storage):
+    """Calendar shows correct color for binary no entry."""
+    test_storage.save_habits(
+        [BinaryHabit(id="workout", name="Workout", color_no="#ff0000")]
+    )
+    test_storage.save_entries(
+        DailyEntries(
+            date=date(2025, 1, 15), entries={"workout": BinaryEntry(value=False)}
+        )
+    )
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout?year=2025&month=1")
+
+    assert "#ff0000" in response.text
+
+
+def test_calendar_single_select_legend(test_storage):
+    """Calendar shows legend for single-select habit."""
+    test_storage.save_habits(
+        [SingleSelectHabit(id="mood", name="Mood", options=["good", "bad"])]
+    )
+
+    client = TestClient(app)
+    response = client.get("/calendar/mood?year=2025&month=1")
+
+    assert "Legend" in response.text
+    assert "good" in response.text
+    assert "bad" in response.text
+
+
+def test_calendar_no_legend_for_binary(test_storage):
+    """Calendar does not show legend for binary habit."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout?year=2025&month=1")
+
+    assert "Legend" not in response.text

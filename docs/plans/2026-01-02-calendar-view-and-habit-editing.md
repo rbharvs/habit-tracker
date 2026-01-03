@@ -859,16 +859,16 @@ def test_calendar_shows_entries(test_storage):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes (all tests including new calendar tests)
-- [ ] `make fix` passes
+- [x] `make test` passes (all tests including new calendar tests)
+- [x] `make fix` passes
 
 #### Manual Verification:
-- [ ] Navigate to `/calendar` - redirects to first habit
-- [ ] Calendar grid displays with correct month/year
-- [ ] Prev/next month navigation works
-- [ ] Habit selector dropdown changes displayed habit
-- [ ] Today is highlighted with blue border
-- [ ] Future days have no background
+- [x] Navigate to `/calendar` - redirects to first habit
+- [x] Calendar grid displays with correct month/year
+- [x] Prev/next month navigation works
+- [x] Habit selector dropdown changes displayed habit
+- [x] Today is highlighted with blue border
+- [x] Future days have no background
 
 ---
 
@@ -1316,17 +1316,17 @@ def test_calendar_no_legend_for_binary(test_storage):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes (all tests including color tests)
-- [ ] `make fix` passes
+- [x] `make test` passes (all tests including color tests)
+- [x] `make fix` passes
 
 #### Manual Verification:
-- [ ] Binary habit: days show green for yes, red for no
-- [ ] Single-select habit: days show option colors, legend visible
-- [ ] Journal habit: days with text show green
-- [ ] Numeric habit with target: gradient from gray to green
-- [ ] Multi-select: blended colors for multiple selections
-- [ ] Future days remain transparent
-- [ ] Days without entries show gray
+- [x] Binary habit: days show green for yes, red for no
+- [x] Single-select habit: days show option colors, legend visible
+- [x] Journal habit: days with text show green
+- [x] Numeric habit with target: gradient from gray to green
+- [x] Multi-select: blended colors for multiple selections
+- [x] Future days remain transparent
+- [x] Days without entries show gray
 
 ---
 

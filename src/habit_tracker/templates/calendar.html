@@ -40,7 +40,8 @@
         {% for week in calendar_weeks %}
         <tr>
             {% for day in week %}
-            <td class="calendar-day {% if not day.is_current_month %}other-month{% endif %} {% if day.is_today %}today{% endif %} {% if day.is_future %}future{% endif %}">
+            <td class="calendar-day {% if not day.is_current_month %}other-month{% endif %} {% if day.is_today %}today{% endif %} {% if day.is_future %}future{% endif %}"
+                style="{% if not day.is_future and day.is_current_month %}background-color: {{ day.color }};{% endif %}">
                 <span class="day-number">{{ day.day }}</span>
             </td>
             {% endfor %}
@@ -48,6 +49,20 @@
         {% endfor %}
     </tbody>
 </table>
+
+{% if legend %}
+<section class="calendar-legend">
+    <h4>Legend</h4>
+    <div class="legend-items">
+        {% for item in legend %}
+        <div class="legend-item">
+            <span class="legend-color" style="background-color: {{ item.color }};"></span>
+            <span class="legend-label">{{ item.option }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
 {% else %}
 <p>No habits configured. <a href="../habits">Create one first</a>.</p>

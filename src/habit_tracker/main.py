@@ -10,10 +10,18 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 from starlette.datastructures import FormData
 
+from .colors import (
+    DEFAULT_GRAY,
+    blend_colors,
+    get_option_color,
+    interpolate_color,
+)
 from .models import (
     BinaryEntry,
     BinaryHabit,
     DailyEntries,
+    Habit,
+    HabitEntry,
     JournalEntry,
     JournalHabit,
     MultiSelectEntry,
@@ -29,6 +37,42 @@ from .storage import Storage
 
 app = FastAPI()
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+
+
+def _get_entry_color(habit: Habit, entry: HabitEntry) -> str:
+    """Calculate color for an entry based on habit type."""
+    match habit:
+        case BinaryHabit():
+            if isinstance(entry, BinaryEntry):
+                return habit.color_yes if entry.value else habit.color_no
+        case SingleSelectHabit():
+            if isinstance(entry, SingleSelectEntry):
+                return get_option_color(entry.value, habit.option_colors, habit.options)
+        case MultiSelectHabit():
+            if isinstance(entry, MultiSelectEntry) and entry.value:
+                colors = [
+                    get_option_color(opt, habit.option_colors, habit.options)
+                    for opt in entry.value
+                ]
+                return blend_colors(colors)
+        case JournalHabit():
+            if isinstance(entry, JournalEntry) and entry.value.strip():
+                return habit.color_filled
+        case NumericHabit():
+            if isinstance(entry, NumericEntry) and entry.value > 0:
+                if habit.target_value is not None and habit.target_value > 0:
+                    ratio = min(entry.value / habit.target_value, 1.0)
+                    return interpolate_color(DEFAULT_GRAY, habit.color_target, ratio)
+                else:
+                    # No target, just use filled color for any non-zero
+                    return habit.color_target
+        case TimeHabit():
+            if isinstance(entry, TimeEntry):
+                return habit.color_filled
+        case _ as unreachable:
+            assert_never(unreachable)
+
+    return DEFAULT_GRAY
 
 
 async def get_form_data(request: Request) -> FormData:
@@ -375,6 +419,11 @@ def calendar_view(
             daily = entries_map.get(current_date)
             entry = daily.entries.get(habit_id) if daily else None
 
+            # Calculate color based on habit type and entry
+            color = DEFAULT_GRAY
+            if entry is not None and current_date <= today:
+                color = _get_entry_color(habit, entry)
+
             week.append(
                 {
                     "date": current_date,
@@ -383,6 +432,7 @@ def calendar_view(
                     "is_today": current_date == today,
                     "is_future": current_date > today,
                     "entry": entry,
+                    "color": color,
                 }
             )
         calendar_weeks.append(week)
@@ -390,6 +440,20 @@ def calendar_view(
         # Stop if we've passed the end of the month
         if week[-1]["date"] > last_day and week[-1]["date"].month != month:
             break
+
+    # Build legend for option-based habits
+    legend = None
+    match habit:
+        case SingleSelectHabit() | MultiSelectHabit():
+            legend = [
+                {
+                    "option": opt,
+                    "color": get_option_color(opt, habit.option_colors, habit.options),
+                }
+                for opt in habit.options
+            ]
+        case _:
+            pass
 
     # Navigation links
     prev_month = month - 1
@@ -421,5 +485,6 @@ def calendar_view(
             "next_year": next_year,
             "next_month": next_month,
             "today": today,
+            "legend": legend,
         },
     )
