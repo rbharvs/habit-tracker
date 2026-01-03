@@ -186,7 +186,9 @@ def create_habit(request: Request, storage: Storage, form: FormDataDep) -> Respo
             new_habit = BinaryHabit(id=habit_id, name=habit_name)
         case "single_select":
             options = [
-                str(o).strip() for o in str(form["options"]).split(",") if o.strip()
+                str(o).strip()
+                for o in str(form.get("options", "")).split(",")
+                if o.strip()
             ]
             new_habit = SingleSelectHabit(id=habit_id, name=habit_name, options=options)
         case "journal":
@@ -198,7 +200,9 @@ def create_habit(request: Request, storage: Storage, form: FormDataDep) -> Respo
             new_habit = TimeHabit(id=habit_id, name=habit_name)
         case "multi_select":
             options = [
-                str(o).strip() for o in str(form["options"]).split(",") if o.strip()
+                str(o).strip()
+                for o in str(form.get("options", "")).split(",")
+                if o.strip()
             ]
             new_habit = MultiSelectHabit(id=habit_id, name=habit_name, options=options)
         case _:
@@ -212,12 +216,15 @@ def create_habit(request: Request, storage: Storage, form: FormDataDep) -> Respo
     habits.append(new_habit)
     storage.save_habits(habits)
 
+    edit_url = f"/habits/{habit_id}/edit"
+
     if request.headers.get("HX-Request"):
-        return templates.TemplateResponse(
-            request, "partials/habit_list.html", {"habits": habits}
+        return Response(
+            status_code=200,
+            headers={"HX-Redirect": edit_url},
         )
 
-    return RedirectResponse(url="./habits", status_code=303)
+    return RedirectResponse(url=edit_url, status_code=303)
 
 
 @app.delete("/habits/{habit_id}", response_model=None)

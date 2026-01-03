@@ -262,15 +262,15 @@ def test_habit_rejects_empty_name():
         BinaryHabit(id="test", name="")
 
 
-def test_select_habit_rejects_empty_options():
-    """SingleSelectHabit and MultiSelectHabit reject empty options list."""
+def test_select_habit_allows_empty_options():
+    """SingleSelectHabit and MultiSelectHabit allow empty options list."""
     from habit_tracker.models import MultiSelectHabit, SingleSelectHabit
 
-    with pytest.raises(ValidationError):
-        SingleSelectHabit(id="mood", name="Mood", options=[])
+    single = SingleSelectHabit(id="mood", name="Mood", options=[])
+    assert single.options == []
 
-    with pytest.raises(ValidationError):
-        MultiSelectHabit(id="exercises", name="Exercises", options=[])
+    multi = MultiSelectHabit(id="exercises", name="Exercises", options=[])
+    assert multi.options == []
 
 
 def test_select_habit_rejects_more_than_9_options():

@@ -29,7 +29,7 @@
 
     <label>
         Type
-        <select name="type" id="habit-type" onchange="toggleOptions()">
+        <select name="type" id="habit-type" onchange="toggleUnitField()">
             <option value="binary">Binary (Yes/No)</option>
             <option value="single_select">Single Select</option>
             <option value="multi_select">Multi Select</option>
@@ -38,13 +38,6 @@
             <option value="journal">Journal</option>
         </select>
     </label>
-
-    <div id="options-field" style="display: none;">
-        <label>
-            Options (comma-separated, max 9)
-            <input type="text" name="options" placeholder="e.g., great, good, okay, bad" data-1p-ignore>
-        </label>
-    </div>
 
     <div id="unit-field" style="display: none;">
         <label>
@@ -57,12 +50,9 @@
 </form>
 
 <script>
-function toggleOptions() {
+function toggleUnitField() {
     const type = document.getElementById('habit-type').value;
-    const optionsField = document.getElementById('options-field');
     const unitField = document.getElementById('unit-field');
-
-    optionsField.style.display = ['single_select', 'multi_select'].includes(type) ? 'block' : 'none';
     unitField.style.display = type === 'numeric' ? 'block' : 'none';
 }
 
@@ -130,11 +120,6 @@ initSortable();
 document.body.addEventListener('htmx:afterSwap', (e) => {
     if (e.detail.target.id === 'habit-list') {
         initSortable();
-    }
-    // Reset form after successful habit creation
-    if (e.detail.requestConfig.path === 'habits' && e.detail.requestConfig.verb === 'post') {
-        document.querySelector('form').reset();
-        toggleOptions();
     }
 });
 </script>

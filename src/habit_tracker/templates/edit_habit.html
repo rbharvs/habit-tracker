@@ -121,11 +121,11 @@ function addOption() {
     document.querySelector('form').requestSubmit();
 }
 
-// Auto-save on change
-document.querySelectorAll('input[name], textarea[name]').forEach(el => {
-    el.addEventListener('change', () => {
+// Auto-save on change (using event delegation for dynamically added inputs)
+document.querySelector('form').addEventListener('change', (e) => {
+    if (e.target.matches('input[name], textarea[name]')) {
         document.querySelector('form').requestSubmit();
-    });
+    }
 });
 </script>
 {% endblock %}

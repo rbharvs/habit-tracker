@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field, NonNegativeInt
 # Constrained types for habit fields
 HabitId = Annotated[str, Field(min_length=1)]
 HabitName = Annotated[str, Field(min_length=1)]
-NonEmptyOptions = Annotated[
+SelectOptions = Annotated[
     list[str],
-    Field(min_length=1, max_length=9, description="1-9 options (keyboard shortcuts)"),
+    Field(max_length=9, description="0-9 options (keyboard shortcuts)"),
 ]
 
 # =============================================================================
@@ -33,7 +33,7 @@ class SingleSelectHabit(BaseModel):
     type: Literal["single_select"] = "single_select"
     id: HabitId
     name: HabitName
-    options: NonEmptyOptions
+    options: SelectOptions
     archived: bool = False
     option_colors: dict[str, str] = {}  # option -> hex color, empty = use defaults
 
@@ -76,7 +76,7 @@ class MultiSelectHabit(BaseModel):
     type: Literal["multi_select"] = "multi_select"
     id: HabitId
     name: HabitName
-    options: NonEmptyOptions
+    options: SelectOptions
     archived: bool = False
     option_colors: dict[str, str] = {}  # option -> hex color
 

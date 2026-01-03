@@ -429,7 +429,7 @@ def test_list_habits_route(test_storage):
 
 
 def test_create_binary_habit(test_storage):
-    """POST /habits creates binary habit."""
+    """POST /habits creates binary habit and redirects to edit page."""
     client = TestClient(app)
     response = client.post(
         "/habits",
@@ -437,7 +437,7 @@ def test_create_binary_habit(test_storage):
         follow_redirects=False,
     )
     assert response.status_code == 303
-    assert "./habits" in response.headers["location"]
+    assert "/habits/workout/edit" in response.headers["location"]
 
     habits = test_storage.load_habits()
     assert len(habits) == 1
@@ -465,6 +465,46 @@ def test_create_single_select_habit(test_storage):
     assert len(habits) == 1
     assert habits[0].type == "single_select"
     assert habits[0].options == ["great", "good", "okay", "bad"]
+
+
+def test_create_single_select_habit_without_options(test_storage):
+    """POST /habits creates single select habit with empty options list."""
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={
+            "type": "single_select",
+            "id": "mood",
+            "name": "How are you feeling?",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert len(habits) == 1
+    assert habits[0].type == "single_select"
+    assert habits[0].options == []
+
+
+def test_create_multi_select_habit_without_options(test_storage):
+    """POST /habits creates multi select habit with empty options list."""
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={
+            "type": "multi_select",
+            "id": "activities",
+            "name": "What did you do?",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert len(habits) == 1
+    assert habits[0].type == "multi_select"
+    assert habits[0].options == []
 
 
 def test_create_habit_duplicate_id_fails(test_storage):
@@ -563,6 +603,18 @@ def test_create_habit_invalid_type_returns_400(test_storage):
         data={"type": "invalid_type", "id": "test", "name": "Test"},
     )
     assert response.status_code == 400
+
+
+def test_create_habit_htmx_redirects_to_edit(test_storage):
+    """POST /habits via HTMX returns HX-Redirect to edit page."""
+    client = TestClient(app)
+    response = client.post(
+        "/habits",
+        data={"type": "binary", "id": "workout", "name": "Did you work out?"},
+        headers={"HX-Request": "true"},
+    )
+    assert response.status_code == 200
+    assert response.headers["HX-Redirect"] == "/habits/workout/edit"
 
 
 # =============================================================================
