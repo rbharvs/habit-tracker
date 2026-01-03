@@ -11,6 +11,7 @@ from habit_tracker.models import (
     DailyEntries,
     MultiSelectEntry,
     NumericEntry,
+    NumericHabit,
     SingleSelectHabit,
     TimeEntry,
 )
@@ -254,3 +255,19 @@ def test_archived_habit_skipped_dynamodb(dynamodb_client):
 
     habits = storage.load_habits()
     assert [h.id for h in habits] == ["habit3", "habit2", "habit1"]
+
+
+def test_save_and_load_habits_with_colors(dynamodb_storage):
+    """Habits with color fields roundtrip through DynamoDB."""
+    habits = [
+        BinaryHabit(
+            id="workout", name="Workout", color_yes="#00ff00", color_no="#ff0000"
+        ),
+        NumericHabit(id="water", name="Water", color_target="#3b82f6", target_value=8),
+    ]
+    dynamodb_storage.save_habits(habits)
+    loaded = dynamodb_storage.load_habits()
+
+    assert loaded[0].color_yes == "#00ff00"
+    assert loaded[1].color_target == "#3b82f6"
+    assert loaded[1].target_value == 8

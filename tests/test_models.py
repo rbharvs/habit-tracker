@@ -313,3 +313,137 @@ def test_habit_discriminated_union_with_new_types():
     assert isinstance(habits[0], NumericHabit)
     assert isinstance(habits[1], TimeHabit)
     assert isinstance(habits[2], MultiSelectHabit)
+
+
+# =============================================================================
+# Color Field Tests
+# =============================================================================
+
+
+def test_binary_habit_color_defaults():
+    """BinaryHabit has default colors."""
+    from habit_tracker.models import BinaryHabit
+
+    habit = BinaryHabit(id="test", name="Test")
+    assert habit.color_yes == "#22c55e"
+    assert habit.color_no == "#ef4444"
+
+
+def test_binary_habit_custom_colors():
+    """BinaryHabit accepts custom colors."""
+    from habit_tracker.models import BinaryHabit
+
+    habit = BinaryHabit(id="test", name="Test", color_yes="#00ff00", color_no="#ff0000")
+    assert habit.color_yes == "#00ff00"
+    assert habit.color_no == "#ff0000"
+
+
+def test_single_select_habit_option_colors_default_empty():
+    """SingleSelectHabit option_colors defaults to empty dict."""
+    from habit_tracker.models import SingleSelectHabit
+
+    habit = SingleSelectHabit(id="mood", name="Mood", options=["good", "bad"])
+    assert habit.option_colors == {}
+
+
+def test_single_select_habit_with_option_colors():
+    """SingleSelectHabit accepts option_colors mapping."""
+    from habit_tracker.models import SingleSelectHabit
+
+    habit = SingleSelectHabit(
+        id="mood",
+        name="Mood",
+        options=["good", "bad"],
+        option_colors={"good": "#22c55e", "bad": "#ef4444"},
+    )
+    assert habit.option_colors["good"] == "#22c55e"
+
+
+def test_journal_habit_color_default():
+    """JournalHabit has default color_filled."""
+    from habit_tracker.models import JournalHabit
+
+    habit = JournalHabit(id="notes", name="Notes")
+    assert habit.color_filled == "#22c55e"
+
+
+def test_numeric_habit_color_default():
+    """NumericHabit has default color_target and None target_value."""
+    from habit_tracker.models import NumericHabit
+
+    habit = NumericHabit(id="water", name="Water")
+    assert habit.color_target == "#22c55e"
+    assert habit.target_value is None
+
+
+def test_numeric_habit_with_target():
+    """NumericHabit accepts target_value for gradient."""
+    from habit_tracker.models import NumericHabit
+
+    habit = NumericHabit(id="water", name="Water", target_value=8)
+    assert habit.target_value == 8
+
+
+def test_time_habit_color_default():
+    """TimeHabit has default color_filled."""
+    from habit_tracker.models import TimeHabit
+
+    habit = TimeHabit(id="bedtime", name="Bedtime")
+    assert habit.color_filled == "#22c55e"
+
+
+def test_multi_select_habit_option_colors_default_empty():
+    """MultiSelectHabit option_colors defaults to empty dict."""
+    from habit_tracker.models import MultiSelectHabit
+
+    habit = MultiSelectHabit(
+        id="exercises", name="Exercises", options=["cardio", "strength"]
+    )
+    assert habit.option_colors == {}
+
+
+def test_habit_loads_without_color_fields():
+    """Habits deserialize correctly without color fields (backward compat)."""
+    from habit_tracker.models import Habit
+
+    adapter = TypeAdapter(list[Habit])
+    data = [
+        {"type": "binary", "id": "workout", "name": "Workout"},
+        {
+            "type": "single_select",
+            "id": "mood",
+            "name": "Mood",
+            "options": ["good", "bad"],
+        },
+        {"type": "journal", "id": "notes", "name": "Notes"},
+        {"type": "numeric", "id": "water", "name": "Water"},
+        {"type": "time", "id": "bedtime", "name": "Bedtime"},
+        {
+            "type": "multi_select",
+            "id": "exercises",
+            "name": "Exercises",
+            "options": ["a", "b"],
+        },
+    ]
+    habits = adapter.validate_python(data)
+
+    # All should have defaults
+    assert habits[0].color_yes == "#22c55e"
+    assert habits[1].option_colors == {}
+    assert habits[2].color_filled == "#22c55e"
+    assert habits[3].target_value is None
+    assert habits[4].color_filled == "#22c55e"
+    assert habits[5].option_colors == {}
+
+
+def test_habit_color_roundtrip():
+    """Habits with colors serialize and deserialize correctly."""
+    from habit_tracker.models import BinaryHabit
+
+    original = BinaryHabit(
+        id="test", name="Test", color_yes="#aabbcc", color_no="#ddeeff"
+    )
+    data = original.model_dump()
+    restored = BinaryHabit(**data)
+    assert restored.color_yes == "#aabbcc"
+    assert restored.color_no == "#ddeeff"

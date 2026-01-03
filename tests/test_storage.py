@@ -191,3 +191,26 @@ def test_delete_entries_for_habit_returns_count(tmp_path: Path):
 
     deleted_count = storage.delete_entries_for_habit("workout")
     assert deleted_count == 3
+
+
+def test_save_and_load_habits_with_colors(tmp_path: Path):
+    """Habits with color fields roundtrip through storage."""
+    from habit_tracker.models import BinaryHabit, SingleSelectHabit
+
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+    habits = [
+        BinaryHabit(
+            id="workout", name="Workout", color_yes="#00ff00", color_no="#ff0000"
+        ),
+        SingleSelectHabit(
+            id="mood",
+            name="Mood",
+            options=["good", "bad"],
+            option_colors={"good": "#22c55e"},
+        ),
+    ]
+    storage.save_habits(habits)
+    loaded = storage.load_habits()
+
+    assert loaded[0].color_yes == "#00ff00"
+    assert loaded[1].option_colors == {"good": "#22c55e"}

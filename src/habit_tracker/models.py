@@ -23,6 +23,8 @@ class BinaryHabit(BaseModel):
     id: HabitId
     name: HabitName
     archived: bool = False
+    color_yes: str = "#22c55e"  # green
+    color_no: str = "#ef4444"  # red
 
 
 class SingleSelectHabit(BaseModel):
@@ -33,6 +35,7 @@ class SingleSelectHabit(BaseModel):
     name: HabitName
     options: NonEmptyOptions
     archived: bool = False
+    option_colors: dict[str, str] = {}  # option -> hex color, empty = use defaults
 
 
 class JournalHabit(BaseModel):
@@ -42,6 +45,7 @@ class JournalHabit(BaseModel):
     id: HabitId
     name: HabitName
     archived: bool = False
+    color_filled: str = "#22c55e"  # green
 
 
 class NumericHabit(BaseModel):
@@ -52,6 +56,8 @@ class NumericHabit(BaseModel):
     name: HabitName
     unit: str = ""  # e.g., "glasses", "pages"
     archived: bool = False
+    color_target: str = "#22c55e"  # green - used for any non-zero if no target
+    target_value: int | None = None  # optional, enables gradient if set
 
 
 class TimeHabit(BaseModel):
@@ -61,6 +67,7 @@ class TimeHabit(BaseModel):
     id: HabitId
     name: HabitName
     archived: bool = False
+    color_filled: str = "#22c55e"  # green
 
 
 class MultiSelectHabit(BaseModel):
@@ -71,6 +78,7 @@ class MultiSelectHabit(BaseModel):
     name: HabitName
     options: NonEmptyOptions
     archived: bool = False
+    option_colors: dict[str, str] = {}  # option -> hex color
 
 
 # Discriminated union: Pydantic uses "type" field to determine which model
