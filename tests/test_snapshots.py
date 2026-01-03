@@ -212,3 +212,90 @@ class TestAPISnapshots:
         response = client.get("/habits/workout/entry-count")
         assert response.status_code == 200
         assert response.json() == snapshot
+
+
+# =============================================================================
+# Save Endpoint Snapshots (POST /save)
+# =============================================================================
+
+
+class TestSaveEndpointSnapshots:
+    """Snapshot tests for the entry save endpoint (POST /save)."""
+
+    def test_save_htmx_response(
+        self, sample_habits, deterministic, snapshot_html, client
+    ):
+        """HTMX save returns saved indicator HTML."""
+        response = client.post(
+            "/save",
+            data={"date": "2025-01-15", "habit_workout": "on"},
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert response.text == snapshot_html
+
+    def test_save_non_htmx_redirect(self, sample_habits, deterministic, client):
+        """Non-HTMX save returns redirect (not snapshotted, just verify behavior)."""
+        response = client.post(
+            "/save",
+            data={"date": "2025-01-15", "habit_workout": "on"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert "day=2025-01-15" in response.headers["location"]
+
+
+# =============================================================================
+# Habit CRUD Snapshots
+# =============================================================================
+
+
+class TestHabitCRUDSnapshots:
+    """Snapshot tests for habit create/update/delete operations."""
+
+    def test_create_habit_htmx_response(self, test_storage, deterministic, client):
+        """Create habit returns HX-Redirect header."""
+        response = client.post(
+            "/habits",
+            data={"type": "binary", "id": "new_habit", "name": "New Habit"},
+            headers={"HX-Request": "true"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 200
+        assert "HX-Redirect" in response.headers
+        assert response.headers["HX-Redirect"] == "/habits/new_habit/edit"
+
+    def test_delete_habit_htmx_response(
+        self, sample_habits, deterministic, snapshot_html, client
+    ):
+        """Archive habit returns updated habit list partial."""
+        response = client.delete(
+            "/habits/workout",
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert response.text == snapshot_html
+
+    def test_update_habit_htmx_response(
+        self, sample_habits, deterministic, snapshot, client
+    ):
+        """Update habit returns 'Saved' text."""
+        response = client.put(
+            "/habits/workout",
+            data={"name": "Exercise Daily"},
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert response.text == snapshot
+
+    def test_reorder_habits_htmx_response(
+        self, sample_habits, deterministic, snapshot_html, client
+    ):
+        """Reorder habits returns updated habit list partial."""
+        response = client.post(
+            "/habits/reorder",
+            json=["notes", "mood", "workout"],  # Reversed order
+            headers={"HX-Request": "true"},
+        )
+        assert response.status_code == 200
+        assert response.text == snapshot_html

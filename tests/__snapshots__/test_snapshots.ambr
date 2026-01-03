@@ -9,3 +9,6 @@
     'count': 1,
   })
 # ---
+# name: TestHabitCRUDSnapshots.test_update_habit_htmx_response
+  'Saved'
+# ---

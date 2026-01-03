@@ -1,0 +1,96 @@
+<ul class="habit-list" id="sortable-habits">
+
+<li class="habit-list-item " data-id="notes">
+    <div class="habit-header-row">
+        <div class="habit-meta">
+            <span class="drag-handle" title="Drag to reorder">⠿</span>
+            <span class="habit-type-badge">Journal</span>
+            <small class="habit-id">notes</small>
+            
+        </div>
+        <div class="habit-actions">
+            
+            <a href="habits/notes/edit" role="button" class="outline secondary" title="Edit">
+                Edit
+            </a>
+            <button class="outline secondary"
+                    hx-delete="habits/notes"
+                    hx-target="#habit-list"
+                    hx-swap="innerHTML"
+                    hx-confirm="Archive this habit? It will be hidden from daily view but entries will be preserved.">
+                Archive
+            </button>
+            
+            <button class="outline secondary delete-btn"
+                    data-habit-id="notes"
+                    onclick="confirmHardDelete('notes', 'Daily notes')">
+                Delete
+            </button>
+        </div>
+    </div>
+    <div class="habit-name">Daily notes</div>
+</li>
+
+<li class="habit-list-item " data-id="mood">
+    <div class="habit-header-row">
+        <div class="habit-meta">
+            <span class="drag-handle" title="Drag to reorder">⠿</span>
+            <span class="habit-type-badge">Single Select</span>
+            <small class="habit-id">mood</small>
+            
+        </div>
+        <div class="habit-actions">
+            
+            <a href="habits/mood/edit" role="button" class="outline secondary" title="Edit">
+                Edit
+            </a>
+            <button class="outline secondary"
+                    hx-delete="habits/mood"
+                    hx-target="#habit-list"
+                    hx-swap="innerHTML"
+                    hx-confirm="Archive this habit? It will be hidden from daily view but entries will be preserved.">
+                Archive
+            </button>
+            
+            <button class="outline secondary delete-btn"
+                    data-habit-id="mood"
+                    onclick="confirmHardDelete('mood', 'How was your mood?')">
+                Delete
+            </button>
+        </div>
+    </div>
+    <div class="habit-name">How was your mood?</div>
+</li>
+
+<li class="habit-list-item " data-id="workout">
+    <div class="habit-header-row">
+        <div class="habit-meta">
+            <span class="drag-handle" title="Drag to reorder">⠿</span>
+            <span class="habit-type-badge">Binary</span>
+            <small class="habit-id">workout</small>
+            
+        </div>
+        <div class="habit-actions">
+            
+            <a href="habits/workout/edit" role="button" class="outline secondary" title="Edit">
+                Edit
+            </a>
+            <button class="outline secondary"
+                    hx-delete="habits/workout"
+                    hx-target="#habit-list"
+                    hx-swap="innerHTML"
+                    hx-confirm="Archive this habit? It will be hidden from daily view but entries will be preserved.">
+                Archive
+            </button>
+            
+            <button class="outline secondary delete-btn"
+                    data-habit-id="workout"
+                    onclick="confirmHardDelete('workout', 'Did you work out?')">
+                Delete
+            </button>
+        </div>
+    </div>
+    <div class="habit-name">Did you work out?</div>
+</li>
+
+</ul>
