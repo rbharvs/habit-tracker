@@ -66,11 +66,75 @@ function toggleOptions() {
     unitField.style.display = type === 'numeric' ? 'block' : 'none';
 }
 
-// Reset form after successful habit creation
+// Hard delete with confirmation
+async function confirmHardDelete(habitId, habitName) {
+    const response = await fetch(`habits/${habitId}/entry-count`);
+    const data = await response.json();
+    const count = data.count;
+
+    const message = count > 0
+        ? `Permanently delete "${habitName}"? This will also delete ${count} entries. This cannot be undone!`
+        : `Permanently delete "${habitName}"? This cannot be undone!`;
+
+    if (confirm(message)) {
+        htmx.ajax('DELETE', `habits/${habitId}?hard=true`, {target: '#habit-list', swap: 'innerHTML'});
+    }
+}
+
+// Initialize SortableJS for drag-and-drop reordering
+function initSortable() {
+    const list = document.getElementById('sortable-habits');
+    if (!list || typeof Sortable === 'undefined') return;
+
+    // Destroy existing instance if any
+    if (list.sortableInstance) {
+        list.sortableInstance.destroy();
+    }
+
+    list.sortableInstance = Sortable.create(list, {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'habit-ghost',
+        dragClass: 'habit-dragging',
+        filter: '.archived',
+        delay: 150,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 5,
+        onEnd: function(evt) {
+            // Collect new order of habit IDs (only non-archived)
+            const items = list.querySelectorAll('.habit-list-item:not(.archived)');
+            const order = Array.from(items).map(item => item.dataset.id);
+
+            // Send to server
+            fetch('habits/reorder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'HX-Request': 'true'
+                },
+                body: JSON.stringify(order)
+            }).then(response => response.text())
+              .then(html => {
+                  document.getElementById('habit-list').innerHTML = html;
+                  htmx.process(document.getElementById('habit-list'));
+                  initSortable();
+              });
+        }
+    });
+}
+
+// Initialize on page load
+initSortable();
+
+// Re-initialize after any htmx swap to habit-list
 document.body.addEventListener('htmx:afterSwap', (e) => {
+    if (e.detail.target.id === 'habit-list') {
+        initSortable();
+    }
+    // Reset form after successful habit creation
     if (e.detail.requestConfig.path === 'habits' && e.detail.requestConfig.verb === 'post') {
         document.querySelector('form').reset();
-        toggleOptions(); // Reset conditional field visibility
+        toggleOptions();
     }
 });
 </script>

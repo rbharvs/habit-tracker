@@ -254,69 +254,38 @@ def delete_habit(
     return RedirectResponse(url="./habits", status_code=303)
 
 
-@app.post("/habits/{habit_id}/move-up")
-def move_habit_up(
+@app.post("/habits/reorder")
+def reorder_habits(
     request: Request,
     storage: Storage,
-    habit_id: str,
+    order: list[str],
 ) -> Response:
-    """Move a habit up in the list (earlier position)."""
+    """Reorder habits based on provided list of IDs."""
     habits = storage.load_habits()
 
-    # Find habit index
-    habit_idx = next((i for i, h in enumerate(habits) if h.id == habit_id), None)
-    if habit_idx is None:
-        raise HTTPException(status_code=404, detail="Habit not found")
+    # Separate active and archived habits
+    active_habits = [h for h in habits if not h.archived]
+    archived_habits = [h for h in habits if h.archived]
 
-    # Can't move up if already at top or habit is archived
-    if habit_idx == 0 or habits[habit_idx].archived:
-        # Return current list unchanged
-        pass
-    else:
-        # Find previous non-archived habit to swap with
-        prev_idx = habit_idx - 1
-        while prev_idx >= 0 and habits[prev_idx].archived:
-            prev_idx -= 1
+    # Validate: order must contain exactly the active habit IDs
+    active_ids = {h.id for h in active_habits}
+    order_ids = set(order)
 
-        if prev_idx >= 0:
-            habits[habit_idx], habits[prev_idx] = habits[prev_idx], habits[habit_idx]
-            storage.save_habits(habits)
-
-    # Return updated list
-    if request.headers.get("HX-Request"):
-        return templates.TemplateResponse(
-            request, "partials/habit_list.html", {"habits": habits}
+    if order_ids != active_ids:
+        raise HTTPException(
+            status_code=400,
+            detail="Order must contain exactly all active habit IDs",
         )
-    return RedirectResponse(url="./habits", status_code=303)
 
+    # Create lookup for reordering
+    habit_by_id = {h.id: h for h in active_habits}
 
-@app.post("/habits/{habit_id}/move-down")
-def move_habit_down(
-    request: Request,
-    storage: Storage,
-    habit_id: str,
-) -> Response:
-    """Move a habit down in the list (later position)."""
-    habits = storage.load_habits()
+    # Reorder active habits according to provided order
+    reordered_active = [habit_by_id[habit_id] for habit_id in order]
 
-    # Find habit index
-    habit_idx = next((i for i, h in enumerate(habits) if h.id == habit_id), None)
-    if habit_idx is None:
-        raise HTTPException(status_code=404, detail="Habit not found")
-
-    # Can't move down if already at bottom or habit is archived
-    if habit_idx == len(habits) - 1 or habits[habit_idx].archived:
-        # Return current list unchanged
-        pass
-    else:
-        # Find next non-archived habit to swap with
-        next_idx = habit_idx + 1
-        while next_idx < len(habits) and habits[next_idx].archived:
-            next_idx += 1
-
-        if next_idx < len(habits):
-            habits[habit_idx], habits[next_idx] = habits[next_idx], habits[habit_idx]
-            storage.save_habits(habits)
+    # Combine: active habits in new order, then archived at end
+    habits = reordered_active + archived_habits
+    storage.save_habits(habits)
 
     # Return updated list
     if request.headers.get("HX-Request"):

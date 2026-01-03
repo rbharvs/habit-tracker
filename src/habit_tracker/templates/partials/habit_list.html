@@ -1,28 +1,15 @@
-<ul class="habit-list">
+<ul class="habit-list" id="sortable-habits">
 {% for habit in habits %}
-<li class="habit-list-item {% if habit.archived %}archived{% endif %}">
+<li class="habit-list-item {% if habit.archived %}archived{% endif %}" data-id="{{ habit.id }}">
     <div class="habit-header-row">
         <div class="habit-meta">
+            {% if not habit.archived %}<span class="drag-handle" title="Drag to reorder">⠿</span>{% endif %}
             <span class="habit-type-badge">{{ habit.type | replace("_", " ") | title }}</span>
             <small class="habit-id">{{ habit.id }}</small>
             {% if habit.archived %}<span class="archived-badge">Archived</span>{% endif %}
         </div>
         <div class="habit-actions">
             {% if not habit.archived %}
-            <button class="outline secondary"
-                    hx-post="habits/{{ habit.id }}/move-up"
-                    hx-target="#habit-list"
-                    hx-swap="innerHTML"
-                    title="Move up">
-                &uarr;
-            </button>
-            <button class="outline secondary"
-                    hx-post="habits/{{ habit.id }}/move-down"
-                    hx-target="#habit-list"
-                    hx-swap="innerHTML"
-                    title="Move down">
-                &darr;
-            </button>
             <a href="habits/{{ habit.id }}/edit" role="button" class="outline secondary" title="Edit">
                 Edit
             </a>
@@ -47,19 +34,3 @@
 <li class="no-habits">No habits configured. Create one below!</li>
 {% endfor %}
 </ul>
-
-<script>
-async function confirmHardDelete(habitId, habitName) {
-    const response = await fetch(`habits/${habitId}/entry-count`);
-    const data = await response.json();
-    const count = data.count;
-
-    const message = count > 0
-        ? `Permanently delete "${habitName}"? This will also delete ${count} entries. This cannot be undone!`
-        : `Permanently delete "${habitName}"? This cannot be undone!`;
-
-    if (confirm(message)) {
-        htmx.ajax('DELETE', `habits/${habitId}?hard=true`, {target: '#habit-list', swap: 'innerHTML'});
-    }
-}
-</script>

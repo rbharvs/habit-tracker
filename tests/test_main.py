@@ -570,141 +570,6 @@ def test_create_habit_invalid_type_returns_400(test_storage):
 # =============================================================================
 
 
-def test_move_habit_up(test_storage):
-    """Test moving a habit up in the list."""
-    test_storage.save_habits(
-        [
-            BinaryHabit(id="habit1", name="Habit 1"),
-            BinaryHabit(id="habit2", name="Habit 2"),
-            BinaryHabit(id="habit3", name="Habit 3"),
-        ]
-    )
-
-    client = TestClient(app)
-    response = client.post("/habits/habit2/move-up", follow_redirects=False)
-    assert response.status_code == 303
-
-    habits = test_storage.load_habits()
-    assert [h.id for h in habits] == ["habit2", "habit1", "habit3"]
-
-
-def test_move_habit_down(test_storage):
-    """Test moving a habit down in the list."""
-    test_storage.save_habits(
-        [
-            BinaryHabit(id="habit1", name="Habit 1"),
-            BinaryHabit(id="habit2", name="Habit 2"),
-            BinaryHabit(id="habit3", name="Habit 3"),
-        ]
-    )
-
-    client = TestClient(app)
-    response = client.post("/habits/habit1/move-down", follow_redirects=False)
-    assert response.status_code == 303
-
-    habits = test_storage.load_habits()
-    assert [h.id for h in habits] == ["habit2", "habit1", "habit3"]
-
-
-def test_move_first_habit_up_noop(test_storage):
-    """Moving first habit up should have no effect."""
-    test_storage.save_habits(
-        [
-            BinaryHabit(id="habit1", name="Habit 1"),
-            BinaryHabit(id="habit2", name="Habit 2"),
-        ]
-    )
-
-    client = TestClient(app)
-    response = client.post("/habits/habit1/move-up", follow_redirects=False)
-    assert response.status_code == 303
-
-    habits = test_storage.load_habits()
-    assert [h.id for h in habits] == ["habit1", "habit2"]
-
-
-def test_move_last_habit_down_noop(test_storage):
-    """Moving last habit down should have no effect."""
-    test_storage.save_habits(
-        [
-            BinaryHabit(id="habit1", name="Habit 1"),
-            BinaryHabit(id="habit2", name="Habit 2"),
-        ]
-    )
-
-    client = TestClient(app)
-    response = client.post("/habits/habit2/move-down", follow_redirects=False)
-    assert response.status_code == 303
-
-    habits = test_storage.load_habits()
-    assert [h.id for h in habits] == ["habit1", "habit2"]
-
-
-def test_move_nonexistent_habit_returns_404(test_storage):
-    """Moving a nonexistent habit returns 404."""
-    client = TestClient(app)
-    response = client.post("/habits/nonexistent/move-up")
-    assert response.status_code == 404
-
-
-def test_archived_habit_cannot_be_moved(test_storage):
-    """Archived habits cannot be moved."""
-    test_storage.save_habits(
-        [
-            BinaryHabit(id="habit1", name="Habit 1"),
-            BinaryHabit(id="habit2", name="Habit 2", archived=True),
-            BinaryHabit(id="habit3", name="Habit 3"),
-        ]
-    )
-
-    client = TestClient(app)
-    # Try to move archived habit up
-    response = client.post("/habits/habit2/move-up", follow_redirects=False)
-    assert response.status_code == 303
-
-    habits = test_storage.load_habits()
-    # Order should be unchanged
-    assert [h.id for h in habits] == ["habit1", "habit2", "habit3"]
-
-
-def test_move_up_skips_archived_habits(test_storage):
-    """Moving up should skip over archived habits."""
-    test_storage.save_habits(
-        [
-            BinaryHabit(id="habit1", name="Habit 1"),
-            BinaryHabit(id="habit2", name="Habit 2", archived=True),
-            BinaryHabit(id="habit3", name="Habit 3"),
-        ]
-    )
-
-    client = TestClient(app)
-    response = client.post("/habits/habit3/move-up", follow_redirects=False)
-    assert response.status_code == 303
-
-    habits = test_storage.load_habits()
-    # Should swap with habit1, skipping archived habit2
-    assert [h.id for h in habits] == ["habit3", "habit2", "habit1"]
-
-
-def test_move_down_skips_archived_habits(test_storage):
-    """Moving down should skip over archived habits."""
-    test_storage.save_habits(
-        [
-            BinaryHabit(id="habit1", name="Habit 1"),
-            BinaryHabit(id="habit2", name="Habit 2", archived=True),
-            BinaryHabit(id="habit3", name="Habit 3"),
-        ]
-    )
-
-    client = TestClient(app)
-    response = client.post("/habits/habit1/move-down", follow_redirects=False)
-    assert response.status_code == 303
-
-    habits = test_storage.load_habits()
-    # Should swap with habit3, skipping archived habit2
-    assert [h.id for h in habits] == ["habit3", "habit2", "habit1"]
-
-
 def test_habit_order_reflected_on_index(test_storage):
     """Habits appear on index page in the reordered sequence."""
     test_storage.save_habits(
@@ -718,7 +583,11 @@ def test_habit_order_reflected_on_index(test_storage):
     client = TestClient(app)
 
     # Reorder: move B to top
-    client.post("/habits/habit_b/move-up", follow_redirects=False)
+    client.post(
+        "/habits/reorder",
+        json=["habit_b", "habit_a", "habit_c"],
+        follow_redirects=False,
+    )
 
     # Check index page shows B before A
     response = client.get("/")
@@ -730,8 +599,30 @@ def test_habit_order_reflected_on_index(test_storage):
     assert b_pos < a_pos < c_pos, "Habits should appear in order: B, A, C"
 
 
-def test_move_habit_htmx_returns_partial(test_storage):
-    """Moving habit with HX-Request returns partial HTML."""
+def test_reorder_habits(test_storage):
+    """POST /habits/reorder changes habit order."""
+    test_storage.save_habits(
+        [
+            BinaryHabit(id="habit1", name="Habit 1"),
+            BinaryHabit(id="habit2", name="Habit 2"),
+            BinaryHabit(id="habit3", name="Habit 3"),
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/habits/reorder",
+        json=["habit3", "habit1", "habit2"],
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert [h.id for h in habits] == ["habit3", "habit1", "habit2"]
+
+
+def test_reorder_habits_htmx(test_storage):
+    """POST /habits/reorder with HX-Request returns partial HTML."""
     test_storage.save_habits(
         [
             BinaryHabit(id="habit1", name="Habit 1"),
@@ -741,13 +632,68 @@ def test_move_habit_htmx_returns_partial(test_storage):
 
     client = TestClient(app)
     response = client.post(
-        "/habits/habit2/move-up",
+        "/habits/reorder",
+        json=["habit2", "habit1"],
         headers={"HX-Request": "true"},
     )
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "Habit 2" in response.text
-    assert "Habit 1" in response.text
+
+
+def test_reorder_habits_preserves_archived_at_end(test_storage):
+    """Reordering keeps archived habits at the end."""
+    test_storage.save_habits(
+        [
+            BinaryHabit(id="habit1", name="Habit 1"),
+            BinaryHabit(id="archived", name="Archived", archived=True),
+            BinaryHabit(id="habit2", name="Habit 2"),
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/habits/reorder",
+        json=["habit2", "habit1"],  # Only active habits in order
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert [h.id for h in habits] == ["habit2", "habit1", "archived"]
+
+
+def test_reorder_habits_invalid_ids_returns_400(test_storage):
+    """Reorder with invalid IDs returns 400."""
+    test_storage.save_habits(
+        [
+            BinaryHabit(id="habit1", name="Habit 1"),
+            BinaryHabit(id="habit2", name="Habit 2"),
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/habits/reorder",
+        json=["habit1", "nonexistent"],
+    )
+    assert response.status_code == 400
+
+
+def test_reorder_habits_missing_ids_returns_400(test_storage):
+    """Reorder with missing IDs returns 400."""
+    test_storage.save_habits(
+        [
+            BinaryHabit(id="habit1", name="Habit 1"),
+            BinaryHabit(id="habit2", name="Habit 2"),
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/habits/reorder",
+        json=["habit1"],  # Missing habit2
+    )
+    assert response.status_code == 400
 
 
 # =============================================================================

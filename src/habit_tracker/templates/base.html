@@ -22,6 +22,7 @@
     </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
     <style>
         :root { --pico-font-size: 16px; }
         .container { max-width: 600px; padding: 1rem; }
@@ -158,6 +159,37 @@
             font-size: 0.8rem;
             margin: 0;
         }
+
+        /* Drag and drop styles */
+        .drag-handle {
+            cursor: grab;
+            padding: 0.5rem;
+            color: var(--pico-muted-color);
+            font-size: 1.2rem;
+            user-select: none;
+            touch-action: none;
+        }
+        .drag-handle:hover {
+            color: var(--pico-primary);
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        @media (max-width: 600px) {
+            .drag-handle {
+                font-size: 1.4rem;
+                padding: 0.5rem 0.75rem;
+            }
+        }
+        .habit-ghost {
+            opacity: 0.4;
+            background: var(--pico-primary-background);
+        }
+        .habit-dragging {
+            opacity: 0.9;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
         .no-habits {
             color: var(--pico-muted-color);
             text-align: center;
