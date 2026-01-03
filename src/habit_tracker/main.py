@@ -505,3 +505,143 @@ def edit_habit_form(request: Request, storage: Storage, habit_id: str) -> HTMLRe
         raise HTTPException(status_code=404, detail="Habit not found")
 
     return templates.TemplateResponse(request, "edit_habit.html", {"habit": habit})
+
+
+@app.put("/habits/{habit_id}", response_model=None)
+def update_habit(
+    request: Request,
+    storage: Storage,
+    habit_id: str,
+    form: FormDataDep,
+) -> Response:
+    """Update a habit's editable fields."""
+    habits = storage.load_habits()
+    habit_idx = next((i for i, h in enumerate(habits) if h.id == habit_id), None)
+
+    if habit_idx is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    habit: Habit = habits[habit_idx]
+
+    # Validate name
+    name = str(form.get("name", "")).strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Name is required")
+
+    # Build update dict based on habit type
+    updates: dict = {"name": name}
+
+    match habit:
+        case BinaryHabit():
+            color_yes = str(form.get("color_yes", habit.color_yes))
+            color_no = str(form.get("color_no", habit.color_no))
+            if not _is_valid_hex_color(color_yes) or not _is_valid_hex_color(color_no):
+                raise HTTPException(status_code=400, detail="Invalid color format")
+            updates["color_yes"] = color_yes
+            updates["color_no"] = color_no
+
+        case SingleSelectHabit():
+            updates.update(_update_select_habit(form, habit.options))
+
+        case MultiSelectHabit():
+            updates.update(_update_select_habit(form, habit.options))
+
+        case JournalHabit():
+            color_filled = str(form.get("color_filled", habit.color_filled))
+            if not _is_valid_hex_color(color_filled):
+                raise HTTPException(status_code=400, detail="Invalid color format")
+            updates["color_filled"] = color_filled
+
+        case TimeHabit():
+            color_filled = str(form.get("color_filled", habit.color_filled))
+            if not _is_valid_hex_color(color_filled):
+                raise HTTPException(status_code=400, detail="Invalid color format")
+            updates["color_filled"] = color_filled
+
+        case NumericHabit():
+            unit = str(form.get("unit", "")).strip()
+            updates["unit"] = unit
+
+            target_str = str(form.get("target_value", "")).strip()
+            if target_str:
+                try:
+                    target_value = int(target_str)
+                    if target_value < 1:
+                        raise HTTPException(
+                            status_code=400, detail="Target must be positive"
+                        )
+                    updates["target_value"] = target_value
+                except ValueError:
+                    raise HTTPException(
+                        status_code=400, detail="Invalid target value"
+                    ) from None
+            else:
+                updates["target_value"] = None
+
+            color_target = str(form.get("color_target", habit.color_target))
+            if not _is_valid_hex_color(color_target):
+                raise HTTPException(status_code=400, detail="Invalid color format")
+            updates["color_target"] = color_target
+
+        case _ as unreachable:  # pragma: no cover
+            assert_never(unreachable)  # type: ignore[type-assertion-failure]
+
+    # Apply updates
+    updated_habit = habit.model_copy(update=updates)
+    habits[habit_idx] = updated_habit
+    storage.save_habits(habits)
+
+    # Response based on request type
+    is_htmx = request.headers.get("HX-Request")
+    if is_htmx:
+        # Return redirect header for HTMX
+        # From /habits/{id}/edit, ".." goes to /habits/
+        response = Response(status_code=200)
+        response.headers["HX-Redirect"] = ".."
+        return response
+    else:
+        return RedirectResponse(url="..", status_code=303)
+
+
+def _is_valid_hex_color(color: str) -> bool:
+    """Validate hex color format (#RRGGBB)."""
+    if not color.startswith("#") or len(color) != 7:
+        return False
+    try:
+        int(color[1:], 16)
+        return True
+    except ValueError:
+        return False
+
+
+def _update_select_habit(form: FormData, existing_options: list[str]) -> dict:
+    """Build updates dict for single/multi-select habits."""
+    # Get options from form (includes existing + new)
+    new_options = [str(o).strip() for o in form.getlist("options") if str(o).strip()]
+
+    # Validate: all existing options must be present (no deletion)
+    for existing_opt in existing_options:
+        if existing_opt not in new_options:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot remove existing option: {existing_opt}",
+            )
+
+    # Validate: max 9 options
+    if len(new_options) > 9:
+        raise HTTPException(status_code=400, detail="Maximum 9 options allowed")
+
+    # Validate: unique options
+    if len(new_options) != len(set(new_options)):
+        raise HTTPException(status_code=400, detail="Options must be unique")
+
+    # Build option_colors from form
+    option_colors = {}
+    for opt in new_options:
+        color_key = f"option_color_{opt}"
+        if color_key in form:
+            color = str(form[color_key])
+            if _is_valid_hex_color(color):
+                option_colors[opt] = color
+
+    return {"options": new_options, "option_colors": option_colors}

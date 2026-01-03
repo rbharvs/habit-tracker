@@ -1941,15 +1941,15 @@ def test_update_habit_dynamodb(dynamodb_client):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes
-- [ ] `make fix` passes
+- [x] `make test` passes
+- [x] `make fix` passes
 
 #### Manual Verification:
-- [ ] Edit binary habit, change name and colors, verify in calendar
-- [ ] Edit single-select habit, add new option, verify in legend
-- [ ] Edit numeric habit, set target, verify gradient in calendar
-- [ ] Attempt to remove option - should fail with error
-- [ ] Attempt empty name - should fail with error
+- [x] Edit binary habit, change name and colors, verify in calendar
+- [x] Edit single-select habit, add new option, verify in legend
+- [x] Edit numeric habit, set target, verify gradient in calendar
+- [x] Attempt to remove option - should fail with error
+- [x] Attempt empty name - should fail with error
 
 ---
 

@@ -7,7 +7,7 @@
 
 <h2>Edit Habit: {{ habit.name }}</h2>
 
-<form method="post" action=".." hx-put=".." hx-target="body" autocomplete="off">
+<form method="post" action="../{{ habit.id }}" hx-put="../{{ habit.id }}" hx-target="body" autocomplete="off">
 
     <label>
         ID (cannot be changed)

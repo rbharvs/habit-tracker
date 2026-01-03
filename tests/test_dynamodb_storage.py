@@ -295,3 +295,21 @@ def test_load_entries_range_empty_dynamodb(dynamodb_storage):
     """load_entries_range returns empty dict when no entries in DynamoDB."""
     result = dynamodb_storage.load_entries_range(date(2025, 1, 1), date(2025, 1, 31))
     assert result == {}
+
+
+def test_update_habit_dynamodb(dynamodb_client):
+    """PUT /habits/{id} persists to DynamoDB."""
+    client, storage = dynamodb_client
+    storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    response = client.put(
+        "/habits/workout",
+        data={"name": "Morning Workout", "color_yes": "#00ff00", "color_no": "#ff0000"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+
+    habits = storage.load_habits()
+    assert habits[0].name == "Morning Workout"
+    assert habits[0].color_yes == "#00ff00"

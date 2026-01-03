@@ -1018,7 +1018,236 @@ def test_edit_habit_form_action_uses_correct_path(test_storage):
     response = client.get("/habits/workout/edit")
 
     assert response.status_code == 200
-    # From /habits/workout/edit, the PUT endpoint /habits/workout is at ".."
-    assert 'hx-put=".."' in response.text
-    # Should NOT use ./habits/workout which would go to /habits/workout/habits/workout
-    assert 'hx-put="./habits/' not in response.text
+    # From /habits/workout/edit, PUT endpoint is at "../workout"
+    # (browser treats /habits/workout/ as directory, not /habits/workout/edit/)
+    assert 'hx-put="../workout"' in response.text
+
+
+# =============================================================================
+# Habit Edit Save Tests (Phase 6)
+# =============================================================================
+
+
+def test_update_habit_name(test_storage):
+    """PUT /habits/{id} updates habit name."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.put(
+        "/habits/workout",
+        data={"name": "Morning Workout", "color_yes": "#22c55e", "color_no": "#ef4444"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+
+    habits = test_storage.load_habits()
+    assert habits[0].name == "Morning Workout"
+
+
+def test_update_habit_colors(test_storage):
+    """PUT /habits/{id} updates habit colors."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    client.put(
+        "/habits/workout",
+        data={"name": "Workout", "color_yes": "#00ff00", "color_no": "#ff0000"},
+        follow_redirects=False,
+    )
+
+    habits = test_storage.load_habits()
+    assert habits[0].color_yes == "#00ff00"
+    assert habits[0].color_no == "#ff0000"
+
+
+def test_update_habit_add_option(test_storage):
+    """PUT /habits/{id} can add new options to select habit."""
+    test_storage.save_habits(
+        [SingleSelectHabit(id="mood", name="Mood", options=["good", "bad"])]
+    )
+
+    client = TestClient(app)
+    client.put(
+        "/habits/mood",
+        data={
+            "name": "Mood",
+            "options": ["good", "bad", "okay"],
+            "option_color_good": "#22c55e",
+            "option_color_bad": "#ef4444",
+            "option_color_okay": "#fbbf24",
+        },
+        follow_redirects=False,
+    )
+
+    habits = test_storage.load_habits()
+    assert habits[0].options == ["good", "bad", "okay"]
+
+
+def test_update_habit_cannot_remove_option(test_storage):
+    """PUT /habits/{id} rejects option removal."""
+    test_storage.save_habits(
+        [SingleSelectHabit(id="mood", name="Mood", options=["good", "bad"])]
+    )
+
+    client = TestClient(app)
+    response = client.put(
+        "/habits/mood",
+        data={"name": "Mood", "options": ["good"]},  # Missing "bad"
+    )
+
+    assert response.status_code == 400
+    assert "Cannot remove" in response.text
+
+
+def test_update_habit_max_9_options(test_storage):
+    """PUT /habits/{id} rejects more than 9 options."""
+    test_storage.save_habits(
+        [SingleSelectHabit(id="rating", name="Rating", options=["1"])]
+    )
+
+    client = TestClient(app)
+    response = client.put(
+        "/habits/rating",
+        data={
+            "name": "Rating",
+            "options": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
+        },
+    )
+
+    assert response.status_code == 400
+    assert "Maximum 9" in response.text
+
+
+def test_update_habit_invalid_color(test_storage):
+    """PUT /habits/{id} rejects invalid color format."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.put(
+        "/habits/workout",
+        data={"name": "Workout", "color_yes": "not-a-color", "color_no": "#ef4444"},
+    )
+
+    assert response.status_code == 400
+
+
+def test_update_habit_empty_name(test_storage):
+    """PUT /habits/{id} rejects empty name."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.put(
+        "/habits/workout",
+        data={"name": "", "color_yes": "#22c55e", "color_no": "#ef4444"},
+    )
+
+    assert response.status_code == 400
+
+
+def test_update_habit_not_found(test_storage):
+    """PUT /habits/{id} returns 404 for unknown habit."""
+    client = TestClient(app)
+    response = client.put("/habits/nonexistent", data={"name": "Test"})
+
+    assert response.status_code == 404
+
+
+def test_update_numeric_habit(test_storage):
+    """PUT /habits/{id} updates numeric habit fields."""
+    test_storage.save_habits([NumericHabit(id="water", name="Water")])
+
+    client = TestClient(app)
+    client.put(
+        "/habits/water",
+        data={
+            "name": "Water Intake",
+            "unit": "glasses",
+            "target_value": "8",
+            "color_target": "#3b82f6",
+        },
+        follow_redirects=False,
+    )
+
+    habits = test_storage.load_habits()
+    assert habits[0].name == "Water Intake"
+    assert habits[0].unit == "glasses"
+    assert habits[0].target_value == 8
+    assert habits[0].color_target == "#3b82f6"
+
+
+def test_update_habit_htmx(test_storage):
+    """PUT /habits/{id} with HTMX returns redirect header."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.put(
+        "/habits/workout",
+        data={"name": "Workout", "color_yes": "#22c55e", "color_no": "#ef4444"},
+        headers={"HX-Request": "true"},
+    )
+
+    assert response.status_code == 200
+    # Redirect to habits list (from /habits/{id}/edit page, ".." = /habits/)
+    assert response.headers.get("HX-Redirect") == ".."
+
+
+def test_update_journal_habit(test_storage):
+    """PUT /habits/{id} updates journal habit fields."""
+    test_storage.save_habits([JournalHabit(id="notes", name="Notes")])
+
+    client = TestClient(app)
+    client.put(
+        "/habits/notes",
+        data={"name": "Daily Notes", "color_filled": "#3b82f6"},
+        follow_redirects=False,
+    )
+
+    habits = test_storage.load_habits()
+    assert habits[0].name == "Daily Notes"
+    assert habits[0].color_filled == "#3b82f6"
+
+
+def test_update_time_habit(test_storage):
+    """PUT /habits/{id} updates time habit fields."""
+    test_storage.save_habits([TimeHabit(id="bedtime", name="Bedtime")])
+
+    client = TestClient(app)
+    client.put(
+        "/habits/bedtime",
+        data={"name": "Sleep Time", "color_filled": "#8b5cf6"},
+        follow_redirects=False,
+    )
+
+    habits = test_storage.load_habits()
+    assert habits[0].name == "Sleep Time"
+    assert habits[0].color_filled == "#8b5cf6"
+
+
+def test_update_multi_select_habit(test_storage):
+    """PUT /habits/{id} updates multi-select habit fields."""
+    test_storage.save_habits(
+        [
+            MultiSelectHabit(
+                id="exercises", name="Exercises", options=["cardio", "strength"]
+            )
+        ]
+    )
+
+    client = TestClient(app)
+    client.put(
+        "/habits/exercises",
+        data={
+            "name": "Workout Types",
+            "options": ["cardio", "strength", "flexibility"],
+            "option_color_cardio": "#ef4444",
+            "option_color_strength": "#3b82f6",
+            "option_color_flexibility": "#22c55e",
+        },
+        follow_redirects=False,
+    )
+
+    habits = test_storage.load_habits()
+    assert habits[0].name == "Workout Types"
+    assert habits[0].options == ["cardio", "strength", "flexibility"]
+    assert habits[0].option_colors["cardio"] == "#ef4444"
