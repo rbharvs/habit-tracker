@@ -23,6 +23,7 @@ def test_storage(tmp_path: Path):
 class HTMLSnapshotExtension(SingleFileSnapshotExtension):
     _write_mode = WriteMode.TEXT
     _file_extension = "html"
+    file_extension = "html"  # Override parent class attribute for actual file extension
 
 
 @pytest.fixture

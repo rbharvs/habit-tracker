@@ -445,13 +445,13 @@ class TestAPISnapshots:
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes
-- [ ] `uv run pytest tests/test_snapshots.py -v` runs all snapshot tests
-- [ ] Snapshot files created in `tests/__snapshots__/test_snapshots/`
+- [x] `make test` passes
+- [x] `uv run pytest tests/test_snapshots.py -v` runs all snapshot tests
+- [x] Snapshot files created in `tests/__snapshots__/test_snapshots/`
 
 #### Manual Verification:
-- [ ] HTML snapshot files are readable and well-formatted
-- [ ] `git diff` shows snapshot files as new additions
+- [x] HTML snapshot files are readable and well-formatted
+- [x] `git diff` shows snapshot files as new additions
 
 ---
 

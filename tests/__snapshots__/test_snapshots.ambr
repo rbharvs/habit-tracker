@@ -1,0 +1,11 @@
+# serializer version: 1
+# name: TestAPISnapshots.test_entry_count_empty
+  dict({
+    'count': 0,
+  })
+# ---
+# name: TestAPISnapshots.test_entry_count_with_entries
+  dict({
+    'count': 1,
+  })
+# ---
