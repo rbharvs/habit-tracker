@@ -1,5 +1,6 @@
 """FastAPI app with routes for viewing/editing daily entries."""
 
+import calendar as cal
 from datetime import date, time, timedelta
 from pathlib import Path
 from typing import Annotated, assert_never
@@ -286,3 +287,139 @@ def get_entry_count(storage: Storage, habit_id: str) -> dict[str, int]:
     """Get the number of entries for a habit (for delete confirmation)."""
     count = storage.count_entries_for_habit(habit_id)
     return {"count": count}
+
+
+# =============================================================================
+# Calendar View Routes
+# =============================================================================
+
+
+@app.get("/calendar", response_class=HTMLResponse)
+def calendar_redirect(request: Request, storage: Storage) -> Response:
+    """Redirect to calendar for first habit."""
+    habits = storage.load_habits()
+    active_habits = [h for h in habits if not h.archived]
+    if not active_habits:
+        # No habits, show empty state
+        return templates.TemplateResponse(
+            request,
+            "calendar.html",
+            {
+                "habit": None,
+                "habits": [],
+                "calendar_weeks": [],
+                "year": date.today().year,
+                "month": date.today().month,
+            },
+        )
+    return RedirectResponse(url=f"./calendar/{active_habits[0].id}", status_code=303)
+
+
+@app.get("/calendar/{habit_id}", response_class=HTMLResponse)
+def calendar_view(
+    request: Request,
+    storage: Storage,
+    habit_id: str,
+    year: int | None = None,
+    month: int | None = None,
+) -> HTMLResponse:
+    """Calendar view for a specific habit."""
+    habits = storage.load_habits()
+    active_habits = [h for h in habits if not h.archived]
+
+    # Find the requested habit
+    habit = next((h for h in habits if h.id == habit_id), None)
+    if habit is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    # Default to current month
+    today = date.today()
+    year = year or today.year
+    month = month or today.month
+
+    # Validate month/year
+    if not (1 <= month <= 12):
+        month = today.month
+    if not (2000 <= year <= 2100):
+        year = today.year
+
+    # Calculate calendar data
+    first_day = date(year, month, 1)
+
+    # Get days in month
+    _, days_in_month = cal.monthrange(year, month)
+    last_day = date(year, month, days_in_month)
+
+    # Load entries for this month
+    entries_map = storage.load_entries_range(first_day, last_day)
+
+    # Build calendar weeks (list of lists)
+    # Each week is 7 items, each item is a dict with day info
+    calendar_weeks: list[list[dict]] = []
+
+    # Start from first day of week containing first_day
+    start_weekday = first_day.weekday()  # Monday=0, Sunday=6
+    # Convert to Sunday=0 format
+    start_weekday = (start_weekday + 1) % 7
+
+    # Calculate start date (might be in previous month)
+    week_start = first_day - timedelta(days=start_weekday)
+
+    # Generate 6 weeks to cover all possible month layouts
+    for week_num in range(6):
+        week = []
+        for day_offset in range(7):
+            current_date = week_start + timedelta(days=week_num * 7 + day_offset)
+
+            # Get entry for this habit on this day
+            daily = entries_map.get(current_date)
+            entry = daily.entries.get(habit_id) if daily else None
+
+            week.append(
+                {
+                    "date": current_date,
+                    "day": current_date.day,
+                    "is_current_month": current_date.month == month,
+                    "is_today": current_date == today,
+                    "is_future": current_date > today,
+                    "entry": entry,
+                }
+            )
+        calendar_weeks.append(week)
+
+        # Stop if we've passed the end of the month
+        if week[-1]["date"] > last_day and week[-1]["date"].month != month:
+            break
+
+    # Navigation links
+    prev_month = month - 1
+    prev_year = year
+    if prev_month < 1:
+        prev_month = 12
+        prev_year -= 1
+
+    next_month = month + 1
+    next_year = year
+    if next_month > 12:
+        next_month = 1
+        next_year += 1
+
+    month_name = cal.month_name[month]
+
+    return templates.TemplateResponse(
+        request,
+        "calendar.html",
+        {
+            "habit": habit,
+            "habits": active_habits,
+            "calendar_weeks": calendar_weeks,
+            "year": year,
+            "month": month,
+            "month_name": month_name,
+            "prev_year": prev_year,
+            "prev_month": prev_month,
+            "next_year": next_year,
+            "next_month": next_month,
+            "today": today,
+        },
+    )

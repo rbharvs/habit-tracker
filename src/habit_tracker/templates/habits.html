@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-<nav class="date-nav">
-    <a href="./">&larr; Back to Today</a>
-    <h2>Manage Habits</h2>
-    <span></span>
-</nav>
+<header class="date-nav">
+    <a href="./">&larr; Daily Entry</a>
+    <a href="./calendar">Calendar View</a>
+</header>
+
+<h2>Manage Habits</h2>
 
 <section id="habit-list">
     {% include "partials/habit_list.html" %}

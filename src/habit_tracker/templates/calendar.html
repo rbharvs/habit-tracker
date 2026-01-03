@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="date-nav">
+    <a href="../habits">&larr; Manage Habits</a>
+    <a href="../">&larr; Daily Entry</a>
+</header>
+
+{% if habit %}
+<section class="calendar-header">
+    <label>
+        Habit:
+        <select id="habit-selector" onchange="window.location.href='./' + this.value + '?year={{ year }}&month={{ month }}'">
+            {% for h in habits %}
+            <option value="{{ h.id }}" {% if h.id == habit.id %}selected{% endif %}>{{ h.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+</section>
+
+<section class="calendar-nav">
+    <a href="./{{ habit.id }}?year={{ prev_year }}&month={{ prev_month }}">&larr; {{ prev_month }}/{{ prev_year }}</a>
+    <h2>{{ month_name }} {{ year }}</h2>
+    <a href="./{{ habit.id }}?year={{ next_year }}&month={{ next_month }}">{{ next_month }}/{{ next_year }} &rarr;</a>
+</section>
+
+<table class="calendar-grid">
+    <thead>
+        <tr>
+            <th>Sun</th>
+            <th>Mon</th>
+            <th>Tue</th>
+            <th>Wed</th>
+            <th>Thu</th>
+            <th>Fri</th>
+            <th>Sat</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for week in calendar_weeks %}
+        <tr>
+            {% for day in week %}
+            <td class="calendar-day {% if not day.is_current_month %}other-month{% endif %} {% if day.is_today %}today{% endif %} {% if day.is_future %}future{% endif %}">
+                <span class="day-number">{{ day.day }}</span>
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>No habits configured. <a href="../habits">Create one first</a>.</p>
+{% endif %}
+{% endblock %}

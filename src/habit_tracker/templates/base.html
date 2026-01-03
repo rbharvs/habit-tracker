@@ -149,6 +149,63 @@
             padding: 1rem;
             list-style: none;
         }
+
+        /* Calendar styles */
+        .calendar-header {
+            margin-bottom: 1rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-nav h2 {
+            margin: 0;
+        }
+
+        .calendar-grid {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .calendar-grid th {
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 2px solid var(--pico-muted-border-color);
+        }
+
+        .calendar-grid td {
+            padding: 0.25rem;
+            text-align: center;
+            vertical-align: top;
+            height: 3rem;
+            border: 1px solid var(--pico-muted-border-color);
+        }
+
+        .calendar-day {
+            background: #e5e5e5;  /* default gray */
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-day.today {
+            border: 3px solid #3b82f6 !important;
+        }
+
+        .calendar-day.future {
+            background: transparent;
+        }
+
+        .day-number {
+            font-size: 0.875rem;
+        }
     </style>
 </head>
 <body>

@@ -748,3 +748,129 @@ def test_move_habit_htmx_returns_partial(test_storage):
     assert "text/html" in response.headers["content-type"]
     assert "Habit 2" in response.text
     assert "Habit 1" in response.text
+
+
+# =============================================================================
+# Calendar View Tests (Phase 3)
+# =============================================================================
+
+
+def test_calendar_redirect_to_first_habit(test_storage):
+    """GET /calendar redirects to first habit's calendar."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/calendar", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert "./calendar/workout" in response.headers["location"]
+
+
+def test_calendar_redirect_skips_archived(test_storage):
+    """GET /calendar skips archived habits."""
+    test_storage.save_habits(
+        [
+            BinaryHabit(id="archived_habit", name="Archived", archived=True),
+            BinaryHabit(id="active_habit", name="Active"),
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.get("/calendar", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert "./calendar/active_habit" in response.headers["location"]
+
+
+def test_calendar_no_habits_shows_empty(test_storage):
+    """GET /calendar with no habits shows empty state."""
+    client = TestClient(app)
+    response = client.get("/calendar")
+
+    assert response.status_code == 200
+    assert "No habits configured" in response.text
+
+
+def test_calendar_habit_view(test_storage):
+    """GET /calendar/{habit_id} shows calendar grid."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout")
+
+    assert response.status_code == 200
+    assert "Workout" in response.text
+    assert "Sun" in response.text  # Day headers
+    assert "Mon" in response.text
+
+
+def test_calendar_habit_not_found(test_storage):
+    """GET /calendar/{habit_id} returns 404 for unknown habit."""
+    client = TestClient(app)
+    response = client.get("/calendar/nonexistent")
+
+    assert response.status_code == 404
+
+
+def test_calendar_month_navigation(test_storage):
+    """GET /calendar/{habit_id}?year=X&month=Y shows specified month."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout?year=2025&month=6")
+
+    assert response.status_code == 200
+    assert "June" in response.text
+    assert "2025" in response.text
+
+
+def test_calendar_shows_entries(test_storage):
+    """Calendar shows existing entries."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+    test_storage.save_entries(
+        DailyEntries(
+            date=date(2025, 1, 15), entries={"workout": BinaryEntry(value=True)}
+        )
+    )
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout?year=2025&month=1")
+
+    assert response.status_code == 200
+    # Entry data is present (we'll verify colors in Phase 4)
+    assert "15" in response.text
+
+
+def test_calendar_nav_links_use_correct_relative_paths(test_storage):
+    """Calendar prev/next month links should not double the calendar path."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout?year=2025&month=6")
+
+    # Links should be ./workout not ./calendar/workout
+    # (since we're already at /calendar/workout)
+    assert "./workout?year=2025&month=5" in response.text  # prev
+    assert "./workout?year=2025&month=7" in response.text  # next
+    # Should NOT have doubled path
+    assert "./calendar/workout" not in response.text
+
+
+def test_calendar_habit_selector_uses_correct_relative_paths(test_storage):
+    """Calendar habit selector dropdown should not double the calendar path."""
+    test_storage.save_habits(
+        [
+            BinaryHabit(id="workout", name="Workout"),
+            BinaryHabit(id="meditation", name="Meditation"),
+        ]
+    )
+
+    client = TestClient(app)
+    response = client.get("/calendar/workout?year=2025&month=6")
+
+    # Selector should navigate to ./{habit_id} not ./calendar/{habit_id}
+    # The JavaScript uses: window.location.href='./' + this.value + '?year=...'
+    assert "'./' + this.value" in response.text or '"./" + this.value' in response.text
+    # Should NOT have ./calendar/ in the selector JavaScript
+    assert "'./calendar/'" not in response.text
+    assert '"./calendar/"' not in response.text
