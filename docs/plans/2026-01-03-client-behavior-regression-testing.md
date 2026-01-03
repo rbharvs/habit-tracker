@@ -198,14 +198,14 @@ def client():
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `uv sync` completes without errors
-- [ ] `make fix` passes (linting, formatting, type checking)
-- [ ] `make test` passes (existing tests still work)
+- [x] `uv sync` completes without errors
+- [x] `make fix` passes (linting, formatting, type checking)
+- [x] `make test` passes (existing tests still work)
 
 #### Manual Verification:
-- [ ] `import time_machine` works in Python REPL
-- [ ] `from syrupy import snapshot` works in Python REPL
-- [ ] `from justhtml import JustHTML` works in Python REPL
+- [x] `import time_machine` works in Python REPL
+- [x] `from syrupy import snapshot` works in Python REPL
+- [x] `from justhtml import JustHTML` works in Python REPL
 
 ---
 
