@@ -51,3 +51,7 @@ def _verify_protocol(storage):
     storage.save_entries(
         DailyEntries(date=date(2025, 1, 1), entries={"test": BinaryEntry(value=True)})
     )
+
+    # Test load_entries_range
+    range_result = storage.load_entries_range(date(2025, 1, 1), date(2025, 1, 31))
+    assert isinstance(range_result, dict)

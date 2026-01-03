@@ -67,3 +67,23 @@ class JsonFileStorage:
                 file.write_text(json.dumps(data, indent=2, default=str))
                 count += 1
         return count
+
+    def load_entries_range(self, start: date, end: date) -> dict[date, DailyEntries]:
+        """Load all entries between start and end dates (inclusive)."""
+        result: dict[date, DailyEntries] = {}
+
+        # Iterate through all entry files
+        for file_path in self.entries_dir.glob("*.json"):
+            # Parse date from filename (YYYY-MM-DD.json)
+            try:
+                file_date = date.fromisoformat(file_path.stem)
+            except ValueError:
+                continue  # Skip invalid filenames
+
+            # Check if within range
+            if start <= file_date <= end:
+                entries = self.load_entries(file_date)
+                if entries is not None:
+                    result[file_date] = entries
+
+        return result

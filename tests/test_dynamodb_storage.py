@@ -271,3 +271,27 @@ def test_save_and_load_habits_with_colors(dynamodb_storage):
     assert loaded[0].color_yes == "#00ff00"
     assert loaded[1].color_target == "#3b82f6"
     assert loaded[1].target_value == 8
+
+
+def test_load_entries_range_dynamodb(dynamodb_storage):
+    """load_entries_range returns entries within date range from DynamoDB."""
+    # Create entries for 5 consecutive days
+    for i in range(5):
+        day = date(2025, 1, 10 + i)
+        dynamodb_storage.save_entries(
+            DailyEntries(date=day, entries={"test": BinaryEntry(value=True)})
+        )
+
+    # Query middle 3 days
+    result = dynamodb_storage.load_entries_range(date(2025, 1, 11), date(2025, 1, 13))
+
+    assert len(result) == 3
+    assert date(2025, 1, 11) in result
+    assert date(2025, 1, 12) in result
+    assert date(2025, 1, 13) in result
+
+
+def test_load_entries_range_empty_dynamodb(dynamodb_storage):
+    """load_entries_range returns empty dict when no entries in DynamoDB."""
+    result = dynamodb_storage.load_entries_range(date(2025, 1, 1), date(2025, 1, 31))
+    assert result == {}

@@ -141,3 +141,24 @@ class DynamoDBStorage:
                 )
                 count += 1
         return count
+
+    def load_entries_range(self, start: date, end: date) -> dict[date, DailyEntries]:
+        """Load all entries between start and end dates (inclusive)."""
+        result: dict[date, DailyEntries] = {}
+
+        # Query with sk BETWEEN for date range
+        response = self._table.query(
+            KeyConditionExpression=(
+                Key("pk").eq(self._user_pk())
+                & Key("sk").between(
+                    f"ENTRY#{start.isoformat()}", f"ENTRY#{end.isoformat()}"
+                )
+            )
+        )
+
+        for item in response.get("Items", []):
+            item_date = date.fromisoformat(item["date"])
+            entries_data = _from_dynamodb(item["entries"])
+            result[item_date] = DailyEntries(date=item_date, entries=entries_data)
+
+        return result

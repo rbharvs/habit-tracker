@@ -214,3 +214,57 @@ def test_save_and_load_habits_with_colors(tmp_path: Path):
 
     assert loaded[0].color_yes == "#00ff00"
     assert loaded[1].option_colors == {"good": "#22c55e"}
+
+
+def test_load_entries_range_returns_matching_dates(tmp_path: Path):
+    """load_entries_range returns entries within date range."""
+    from habit_tracker.models import BinaryEntry, DailyEntries
+
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+
+    # Create entries for 5 consecutive days
+    for i in range(5):
+        day = date(2025, 1, 10 + i)  # Jan 10-14
+        storage.save_entries(
+            DailyEntries(date=day, entries={"test": BinaryEntry(value=True)})
+        )
+
+    # Query middle 3 days
+    result = storage.load_entries_range(date(2025, 1, 11), date(2025, 1, 13))
+
+    assert len(result) == 3
+    assert date(2025, 1, 11) in result
+    assert date(2025, 1, 12) in result
+    assert date(2025, 1, 13) in result
+    assert date(2025, 1, 10) not in result
+    assert date(2025, 1, 14) not in result
+
+
+def test_load_entries_range_empty_returns_empty_dict(tmp_path: Path):
+    """load_entries_range returns empty dict when no entries in range."""
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+
+    result = storage.load_entries_range(date(2025, 1, 1), date(2025, 1, 31))
+
+    assert result == {}
+
+
+def test_load_entries_range_partial_coverage(tmp_path: Path):
+    """load_entries_range works when only some dates have entries."""
+    from habit_tracker.models import BinaryEntry, DailyEntries
+
+    storage = JsonFileStorage(data_dir=tmp_path / "data")
+
+    # Create entries for only 2 of 5 days in range
+    storage.save_entries(
+        DailyEntries(date=date(2025, 1, 10), entries={"a": BinaryEntry(value=True)})
+    )
+    storage.save_entries(
+        DailyEntries(date=date(2025, 1, 14), entries={"a": BinaryEntry(value=False)})
+    )
+
+    result = storage.load_entries_range(date(2025, 1, 10), date(2025, 1, 14))
+
+    assert len(result) == 2
+    assert result[date(2025, 1, 10)].entries["a"].value is True
+    assert result[date(2025, 1, 14)].entries["a"].value is False
