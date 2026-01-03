@@ -488,3 +488,20 @@ def calendar_view(
             "legend": legend,
         },
     )
+
+
+# =============================================================================
+# Habit Edit Routes
+# =============================================================================
+
+
+@app.get("/habits/{habit_id}/edit", response_class=HTMLResponse)
+def edit_habit_form(request: Request, storage: Storage, habit_id: str) -> HTMLResponse:
+    """Edit form for a habit."""
+    habits = storage.load_habits()
+    habit = next((h for h in habits if h.id == habit_id), None)
+
+    if habit is None:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    return templates.TemplateResponse(request, "edit_habit.html", {"habit": habit})

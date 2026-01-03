@@ -23,6 +23,9 @@
                 title="Move down">
             &darr;
         </button>
+        <a href="habits/{{ habit.id }}/edit" role="button" class="outline secondary" title="Edit">
+            Edit
+        </a>
         <button class="outline secondary"
                 hx-delete="habits/{{ habit.id }}"
                 hx-target="#habit-list"

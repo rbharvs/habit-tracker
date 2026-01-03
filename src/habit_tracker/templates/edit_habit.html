@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<header class="date-nav">
+    <a href="../..">&larr; Back to Habits</a>
+</header>
+
+<h2>Edit Habit: {{ habit.name }}</h2>
+
+<form method="post" action=".." hx-put=".." hx-target="body" autocomplete="off">
+
+    <label>
+        ID (cannot be changed)
+        <input type="text" value="{{ habit.id }}" disabled>
+    </label>
+
+    <label>
+        Type (cannot be changed)
+        <input type="text" value="{{ habit.type }}" disabled>
+        <small>Habit type cannot be changed after creation.</small>
+    </label>
+
+    <label>
+        Name
+        <input type="text" name="name" value="{{ habit.name }}" required data-1p-ignore>
+    </label>
+
+    {% if habit.type == "binary" %}
+    <fieldset>
+        <legend>Colors</legend>
+        <div class="color-row">
+            <label>
+                Yes
+                <input type="color" name="color_yes" value="{{ habit.color_yes }}">
+            </label>
+            <label>
+                No
+                <input type="color" name="color_no" value="{{ habit.color_no }}">
+            </label>
+        </div>
+    </fieldset>
+
+    {% elif habit.type == "single_select" or habit.type == "multi_select" %}
+    <fieldset>
+        <legend>Options & Colors</legend>
+        <div id="options-list">
+            {% for option in habit.options %}
+            <div class="option-row">
+                <input type="text" name="options" value="{{ option }}" readonly>
+                <input type="color" name="option_color_{{ option }}"
+                       value="{{ habit.option_colors.get(option, '#22c55e') }}">
+            </div>
+            {% endfor %}
+        </div>
+        <div class="add-option-row">
+            <input type="text" id="new-option-input" placeholder="New option name" data-1p-ignore>
+            <button type="button" onclick="addOption()">Add Option</button>
+        </div>
+        <small>Maximum 9 options. Existing options cannot be removed.</small>
+    </fieldset>
+
+    {% elif habit.type == "journal" or habit.type == "time" %}
+    <fieldset>
+        <legend>Color</legend>
+        <label>
+            Filled
+            <input type="color" name="color_filled" value="{{ habit.color_filled }}">
+        </label>
+    </fieldset>
+
+    {% elif habit.type == "numeric" %}
+    <fieldset>
+        <legend>Settings</legend>
+        <label>
+            Unit
+            <input type="text" name="unit" value="{{ habit.unit }}" placeholder="e.g., glasses" data-1p-ignore>
+        </label>
+        <label>
+            Target value (for gradient coloring)
+            <input type="number" name="target_value" value="{{ habit.target_value or '' }}" min="1" placeholder="Optional">
+        </label>
+        <label>
+            Target color
+            <input type="color" name="color_target" value="{{ habit.color_target }}">
+        </label>
+    </fieldset>
+    {% endif %}
+
+    <div class="form-actions">
+        <button type="submit">Save Changes</button>
+        <a href="../.." role="button" class="outline secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addOption() {
+    const input = document.getElementById('new-option-input');
+    const value = input.value.trim();
+    if (!value) return;
+
+    const list = document.getElementById('options-list');
+    const count = list.querySelectorAll('.option-row').length;
+
+    if (count >= 9) {
+        alert('Maximum 9 options allowed.');
+        return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'option-row';
+    row.innerHTML = `
+        <input type="text" name="options" value="${value}" readonly>
+        <input type="color" name="option_color_${value}" value="#22c55e">
+    `;
+    list.appendChild(row);
+    input.value = '';
+}
+</script>
+{% endblock %}

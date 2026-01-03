@@ -937,3 +937,88 @@ def test_calendar_no_legend_for_binary(test_storage):
     response = client.get("/calendar/workout?year=2025&month=1")
 
     assert "Legend" not in response.text
+
+
+# =============================================================================
+# Habit Edit Form Tests (Phase 5)
+# =============================================================================
+
+
+def test_edit_habit_form_binary(test_storage):
+    """GET /habits/{id}/edit shows edit form for binary habit."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/habits/workout/edit")
+
+    assert response.status_code == 200
+    assert "Workout" in response.text
+    assert 'name="name"' in response.text
+    assert 'name="color_yes"' in response.text
+    assert 'name="color_no"' in response.text
+
+
+def test_edit_habit_form_single_select(test_storage):
+    """GET /habits/{id}/edit shows options for single-select habit."""
+    test_storage.save_habits(
+        [SingleSelectHabit(id="mood", name="Mood", options=["good", "bad"])]
+    )
+
+    client = TestClient(app)
+    response = client.get("/habits/mood/edit")
+
+    assert response.status_code == 200
+    assert "good" in response.text
+    assert "bad" in response.text
+    assert "Add Option" in response.text
+
+
+def test_edit_habit_form_numeric(test_storage):
+    """GET /habits/{id}/edit shows unit and target for numeric habit."""
+    test_storage.save_habits(
+        [NumericHabit(id="water", name="Water", unit="glasses", target_value=8)]
+    )
+
+    client = TestClient(app)
+    response = client.get("/habits/water/edit")
+
+    assert response.status_code == 200
+    assert "glasses" in response.text
+    assert 'name="target_value"' in response.text
+    assert 'name="unit"' in response.text
+
+
+def test_edit_habit_not_found(test_storage):
+    """GET /habits/{id}/edit returns 404 for unknown habit."""
+    client = TestClient(app)
+    response = client.get("/habits/nonexistent/edit")
+
+    assert response.status_code == 404
+
+
+def test_edit_habit_back_link_uses_correct_path(test_storage):
+    """Back to Habits link navigates correctly from edit page."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/habits/workout/edit")
+
+    assert response.status_code == 200
+    # From /habits/workout/edit, we need "../.." to reach /habits
+    # Should NOT contain "./habits" which would incorrectly go to /habits/workout/habits
+    assert 'href="../.."' in response.text
+    assert 'href="./habits"' not in response.text
+
+
+def test_edit_habit_form_action_uses_correct_path(test_storage):
+    """Edit form action targets correct endpoint."""
+    test_storage.save_habits([BinaryHabit(id="workout", name="Workout")])
+
+    client = TestClient(app)
+    response = client.get("/habits/workout/edit")
+
+    assert response.status_code == 200
+    # From /habits/workout/edit, the PUT endpoint /habits/workout is at ".."
+    assert 'hx-put=".."' in response.text
+    # Should NOT use ./habits/workout which would go to /habits/workout/habits/workout
+    assert 'hx-put="./habits/' not in response.text

@@ -1611,17 +1611,17 @@ def test_edit_habit_not_found(test_storage):
 ### Success Criteria
 
 #### Automated Verification:
-- [ ] `make test` passes
-- [ ] `make fix` passes
+- [x] `make test` passes
+- [x] `make fix` passes
 
 #### Manual Verification:
-- [ ] Edit button appears in habit list
-- [ ] Edit form loads with current values
-- [ ] Binary habit shows two color pickers
-- [ ] Single/multi-select shows options with color pickers
-- [ ] "Add Option" button adds new option row
-- [ ] Numeric shows unit and target fields
-- [ ] Cancel returns to habit list
+- [x] Edit button appears in habit list
+- [x] Edit form loads with current values
+- [x] Binary habit shows two color pickers
+- [x] Single/multi-select shows options with color pickers
+- [x] "Add Option" button adds new option row
+- [x] Numeric shows unit and target fields
+- [x] Cancel returns to habit list
 
 ---
 

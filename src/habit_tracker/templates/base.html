@@ -234,6 +234,62 @@
             border-radius: 3px;
             border: 1px solid var(--pico-muted-border-color);
         }
+
+        /* Edit form styles */
+        .color-row {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .color-row label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .option-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+
+        .option-row input[type="text"] {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .option-row input[type="color"] {
+            width: 3rem;
+            height: 2.5rem;
+            padding: 0.25rem;
+            margin-bottom: 0;
+        }
+
+        .add-option-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .add-option-row input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .add-option-row button {
+            margin-bottom: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        input[type="color"] {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
